@@ -26,13 +26,15 @@ namespace router
 
         public string ip_adresa { get => txt_ip_adresa.Text; set => txt_ip_adresa.Text = value; }
         public string maska { get =>txt_maska.Text; set => txt_maska.Text = value; }
-        public string adaptery { get => lb_rozhrania.SelectedItem.ToString(); set => lb_rozhrania.Items.Add(value); }
-        public int lb_adaptery_index { get =>lb_rozhrania.SelectedIndex; set => throw new NotImplementedException(); }
+       // public string adaptery { get => lb_rozhrania.SelectedItem.ToString(); set => lb_rozhrania.Items.Add(value); }
+        public string adaptery { get => cb_adaptery.SelectedItem.ToString(); set => cb_adaptery.Items.Add(value); }
+        //public int lb_adaptery_index { get =>lb_rozhrania.SelectedIndex; set => throw new NotImplementedException(); }
+        public int lb_adaptery_index { get => cb_adaptery.SelectedIndex; set => throw new NotImplementedException(); }
         internal MainController Presenter { get => presenter; set => presenter = value; }
         public string arp { get => txt_arp.Text.ToString(); set => txt_arp.Text = value; }
         public string lb_arp_zaznam { get => lb_arp_tabulka.SelectedItem.ToString(); set => lb_arp_tabulka.Items.Add(value); }
         public int lb_arp_zaznam_index { get => lb_arp_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
-        public List<string> omg { get => lb_arp_tabulka.Items.Cast<string>().ToList(); set => lb_arp_tabulka.Items.Clear(); }
+
         public int casovac { get => Int32.Parse(txt_casovac.Text); set => txt_casovac.Text=value.ToString(); }
 
         public Thread t = null;
@@ -116,6 +118,11 @@ namespace router
                 presenter.zastav_vlakno = true;
                 t.Join();
             }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

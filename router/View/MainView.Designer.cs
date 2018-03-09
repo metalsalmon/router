@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.btn_nastav = new System.Windows.Forms.Button();
-            this.lb_rozhrania = new System.Windows.Forms.ListBox();
             this.txt_ip_adresa = new System.Windows.Forms.TextBox();
             this.txt_maska = new System.Windows.Forms.TextBox();
             this.btn_arp = new System.Windows.Forms.Button();
@@ -42,6 +41,7 @@
             this.txt_casovac = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.cb_adaptery = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // btn_nastav
@@ -53,15 +53,6 @@
             this.btn_nastav.Text = "nastav";
             this.btn_nastav.UseVisualStyleBackColor = true;
             this.btn_nastav.Click += new System.EventHandler(this.btn_nastav_Click);
-            // 
-            // lb_rozhrania
-            // 
-            this.lb_rozhrania.FormattingEnabled = true;
-            this.lb_rozhrania.ItemHeight = 16;
-            this.lb_rozhrania.Location = new System.Drawing.Point(224, 12);
-            this.lb_rozhrania.Name = "lb_rozhrania";
-            this.lb_rozhrania.Size = new System.Drawing.Size(400, 180);
-            this.lb_rozhrania.TabIndex = 1;
             // 
             // txt_ip_adresa
             // 
@@ -154,11 +145,26 @@
             this.label2.TabIndex = 12;
             this.label2.Text = "maska";
             // 
+            // cb_adaptery
+            // 
+            this.cb_adaptery.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
+            this.cb_adaptery.AllowDrop = true;
+            this.cb_adaptery.Cursor = System.Windows.Forms.Cursors.Default;
+            this.cb_adaptery.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cb_adaptery.FormattingEnabled = true;
+            this.cb_adaptery.Location = new System.Drawing.Point(220, 27);
+            this.cb_adaptery.Name = "cb_adaptery";
+            this.cb_adaptery.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.cb_adaptery.Size = new System.Drawing.Size(387, 24);
+            this.cb_adaptery.TabIndex = 13;
+            this.cb_adaptery.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(636, 380);
+            this.Controls.Add(this.cb_adaptery);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txt_casovac);
@@ -169,7 +175,6 @@
             this.Controls.Add(this.btn_arp);
             this.Controls.Add(this.txt_maska);
             this.Controls.Add(this.txt_ip_adresa);
-            this.Controls.Add(this.lb_rozhrania);
             this.Controls.Add(this.btn_nastav);
             this.Name = "MainView";
             this.Text = "SW router";
@@ -182,7 +187,6 @@
         #endregion
 
         private System.Windows.Forms.Button btn_nastav;
-        private System.Windows.Forms.ListBox lb_rozhrania;
         private System.Windows.Forms.TextBox txt_ip_adresa;
         private System.Windows.Forms.TextBox txt_maska;
         private System.Windows.Forms.Button btn_arp;
@@ -194,6 +198,7 @@
         private System.Windows.Forms.TextBox txt_casovac;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox cb_adaptery;
     }
 }
 

@@ -16,7 +16,6 @@ namespace router.View
         string lb_arp_zaznam { get; set; }
         string arp { get; set; }
         int casovac { get; set; }
-        List<string> omg { get; set; }
         void vymaz_arp();
     }
 }
