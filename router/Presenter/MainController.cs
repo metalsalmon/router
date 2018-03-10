@@ -98,7 +98,7 @@ namespace router.Presenter
         {
                     odosielatel_address = new IPAddress(paket.Bytes.Skip(28).Take(4).ToArray());
                     ciel_address = new IPAddress(paket.Bytes.Skip(38).Take(4).ToArray());
-                     
+                      
 
                 if (eth.Type.ToString().Equals("Arp") && (ciel_address.ToString().Equals("255.255.255.255") || ciel_address.ToString().Equals(rozhranie.ip_adresa)))
                     {
