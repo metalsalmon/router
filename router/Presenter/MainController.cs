@@ -58,7 +58,7 @@ namespace router.Presenter
 
         public Rozhranie nastav_ip(Rozhranie rozhranie)
         {
-                  rozhranie = new Rozhranie(zoznam_adapterov[main_view.adaptery_index], main_view.ip_adresa, main_view.maska);
+            rozhranie = new Rozhranie(zoznam_adapterov[main_view.adaptery_index], main_view.ip_adresa, main_view.maska);
             return rozhranie;
         }
 
