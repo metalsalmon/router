@@ -42,6 +42,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.cb_adaptery = new System.Windows.Forms.ComboBox();
+            this.rb_rozhranie1 = new System.Windows.Forms.RadioButton();
+            this.rb_rozhranie2 = new System.Windows.Forms.RadioButton();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_nastav
@@ -157,13 +161,48 @@
             this.cb_adaptery.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.cb_adaptery.Size = new System.Drawing.Size(387, 24);
             this.cb_adaptery.TabIndex = 13;
-            this.cb_adaptery.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // rb_rozhranie1
+            // 
+            this.rb_rozhranie1.AutoSize = true;
+            this.rb_rozhranie1.Checked = true;
+            this.rb_rozhranie1.Location = new System.Drawing.Point(23, 30);
+            this.rb_rozhranie1.Name = "rb_rozhranie1";
+            this.rb_rozhranie1.Size = new System.Drawing.Size(101, 21);
+            this.rb_rozhranie1.TabIndex = 14;
+            this.rb_rozhranie1.TabStop = true;
+            this.rb_rozhranie1.Text = "rozhranie 1";
+            this.rb_rozhranie1.UseVisualStyleBackColor = true;
+            this.rb_rozhranie1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+            // 
+            // rb_rozhranie2
+            // 
+            this.rb_rozhranie2.AutoSize = true;
+            this.rb_rozhranie2.Location = new System.Drawing.Point(23, 57);
+            this.rb_rozhranie2.Name = "rb_rozhranie2";
+            this.rb_rozhranie2.Size = new System.Drawing.Size(101, 21);
+            this.rb_rozhranie2.TabIndex = 15;
+            this.rb_rozhranie2.Text = "rozhranie 2";
+            this.rb_rozhranie2.UseVisualStyleBackColor = true;
+            this.rb_rozhranie2.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.rb_rozhranie1);
+            this.groupBox1.Controls.Add(this.rb_rozhranie2);
+            this.groupBox1.Location = new System.Drawing.Point(441, 75);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(148, 97);
+            this.groupBox1.TabIndex = 16;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "rozhrania";
             // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(636, 380);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.cb_adaptery);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -179,6 +218,8 @@
             this.Name = "MainView";
             this.Text = "SW router";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainView_FormClosing);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -199,6 +240,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cb_adaptery;
+        private System.Windows.Forms.RadioButton rb_rozhranie1;
+        private System.Windows.Forms.RadioButton rb_rozhranie2;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
 
