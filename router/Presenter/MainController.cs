@@ -69,7 +69,7 @@ namespace router.Presenter
             rozhranie.adapter.StartCapture();                     
         }
 
-        public void zachytenie(object sender, CaptureEventArgs e)
+        public void zachytenie(object sender, CaptureEventArgs e) 
         {
             Packet paket = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
 
