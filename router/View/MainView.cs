@@ -12,6 +12,8 @@ using router.Presenter;
 using System.Net;
 using System.Threading;
 using System.Runtime.InteropServices;
+using router.Model;
+
 namespace router
 {
     public partial class MainView : Form, IView
@@ -28,11 +30,12 @@ namespace router
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
 
+        internal MainController Presenter { get => presenter; set => presenter = value; }
         public string ip_adresa { get => txt_ip_adresa.Text; set => txt_ip_adresa.Text = value; }
         public string maska { get => txt_maska.Text; set => txt_maska.Text = value; }
         public string adaptery { get => cb_adaptery.SelectedItem.ToString(); set => cb_adaptery.Items.Add(value); }
         public int adaptery_index { get => cb_adaptery.SelectedIndex; set => throw new NotImplementedException(); }
-        internal MainController Presenter { get => presenter; set => presenter = value; }
+        
         public string arp { get => txt_arp.Text.ToString(); set => txt_arp.Text = value; }
         public string lb_arp_zaznam { get => lb_arp_tabulka.SelectedItem.ToString(); set => lb_arp_tabulka.Items.Add(value); }
         public int lb_arp_zaznam_index { get => lb_arp_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
@@ -42,6 +45,9 @@ namespace router
         public Thread vlakno_rozhranie1 = null, vlakno_rozhranie2 = null;
         private void btn_nastav_Click(object sender, EventArgs e)
         {
+            Console.WriteLine(Praca_s_ip.broadcast(IPAddress.Parse(txt_ip_adresa.Text.ToString()),IPAddress.Parse(txt_maska.Text.ToString())));
+            Console.WriteLine(Praca_s_ip.adresa_siete(IPAddress.Parse(txt_ip_adresa.Text.ToString()), IPAddress.Parse(txt_maska.Text.ToString())));
+
             if (adaptery_index >= 0 && (rb_rozhranie1.Checked || rb_rozhranie2.Checked))
             {
                 if (rb_rozhranie1.Checked) presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1);
@@ -66,9 +72,6 @@ namespace router
                 {
                     MessageBox.Show(ee.ToString());
                 }
-
-
-
             }
             else
             {

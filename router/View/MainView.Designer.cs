@@ -45,14 +45,15 @@
             this.rb_rozhranie1 = new System.Windows.Forms.RadioButton();
             this.rb_rozhranie2 = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lb_smerovacia_tabulka = new System.Windows.Forms.ListBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_nastav
             // 
-            this.btn_nastav.Location = new System.Drawing.Point(118, 92);
+            this.btn_nastav.Location = new System.Drawing.Point(103, 92);
             this.btn_nastav.Name = "btn_nastav";
-            this.btn_nastav.Size = new System.Drawing.Size(75, 23);
+            this.btn_nastav.Size = new System.Drawing.Size(100, 23);
             this.btn_nastav.TabIndex = 0;
             this.btn_nastav.Text = "nastav";
             this.btn_nastav.UseVisualStyleBackColor = true;
@@ -100,7 +101,7 @@
             // 
             // btn_zmaz_arp
             // 
-            this.btn_zmaz_arp.Location = new System.Drawing.Point(314, 343);
+            this.btn_zmaz_arp.Location = new System.Drawing.Point(293, 343);
             this.btn_zmaz_arp.Name = "btn_zmaz_arp";
             this.btn_zmaz_arp.Size = new System.Drawing.Size(75, 23);
             this.btn_zmaz_arp.TabIndex = 8;
@@ -190,18 +191,28 @@
             // 
             this.groupBox1.Controls.Add(this.rb_rozhranie1);
             this.groupBox1.Controls.Add(this.rb_rozhranie2);
-            this.groupBox1.Location = new System.Drawing.Point(441, 75);
+            this.groupBox1.Location = new System.Drawing.Point(220, 64);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(148, 97);
             this.groupBox1.TabIndex = 16;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "rozhrania";
             // 
+            // lb_smerovacia_tabulka
+            // 
+            this.lb_smerovacia_tabulka.FormattingEnabled = true;
+            this.lb_smerovacia_tabulka.ItemHeight = 16;
+            this.lb_smerovacia_tabulka.Location = new System.Drawing.Point(629, 27);
+            this.lb_smerovacia_tabulka.Name = "lb_smerovacia_tabulka";
+            this.lb_smerovacia_tabulka.Size = new System.Drawing.Size(509, 340);
+            this.lb_smerovacia_tabulka.TabIndex = 17;
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(636, 380);
+            this.ClientSize = new System.Drawing.Size(1187, 560);
+            this.Controls.Add(this.lb_smerovacia_tabulka);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.cb_adaptery);
             this.Controls.Add(this.label2);
@@ -243,6 +254,7 @@
         private System.Windows.Forms.RadioButton rb_rozhranie1;
         private System.Windows.Forms.RadioButton rb_rozhranie2;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ListBox lb_smerovacia_tabulka;
     }
 }
 

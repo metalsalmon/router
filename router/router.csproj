@@ -52,7 +52,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Arp.cs" />
+    <Compile Include="Model\Praca_s_ip.cs" />
     <Compile Include="Model\Rozhranie.cs" />
+    <Compile Include="Model\Smerovaci_zaznam.cs" />
     <Compile Include="Presenter\MainController.cs" />
     <Compile Include="View\IView.cs" />
     <Compile Include="View\MainView.cs">
