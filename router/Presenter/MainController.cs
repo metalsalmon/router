@@ -25,7 +25,7 @@ namespace router.Presenter
         public ARPPacket arp_packet { get; set; }
         //public EthernetPacket eth { get; set; }
         public IPAddress odosielatel_address, ciel_address;
-        public int omg = 5;
+        public int omg = 5; 
         private bool pridaj_arp_zaznam = true;
         public bool zastav_vlakno { get; set; }
         private Arp arp;
