@@ -20,7 +20,7 @@ namespace router
         public MainView()
         {
             AllocConsole();
-            InitializeComponent();
+            InitializeComponent(); 
             presenter = new MainController(this);
         }
 
