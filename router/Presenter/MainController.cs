@@ -31,6 +31,8 @@ namespace router.Presenter
         private Arp arp;
         public int casovac {get;set;}
         public bool zmaz_arp_tabulku { get; set; }
+        private List<Smerovaci_zaznam> smerovacia_tabulka;
+        private Smerovaci_zaznam smerovaci_zaznam;
       //  private Packet paket;
 
         public MainController(IView view)
@@ -40,15 +42,14 @@ namespace router.Presenter
             zoznam_adapterov = new List<ICaptureDevice>();
             zobraz_sietove_adaptery();
             arp_tabulka = new List<Arp>();
+            smerovacia_tabulka = new List<Smerovaci_zaznam>();
             zastav_vlakno = false;
             casovac = 50;
-            zmaz_arp_tabulku = false;
-            
+            zmaz_arp_tabulku = false;        
         }
 
         public void zobraz_sietove_adaptery()
-        {
-        
+        {     
             foreach (ICaptureDevice adapter in adaptery)
             {
                zoznam_adapterov.Add(adapter);
@@ -148,7 +149,6 @@ namespace router.Presenter
                 }
             }
 
-
             foreach (var zaznam in arp_tabulka.ToList())
             {
                 zaznam.casovac--;
@@ -161,6 +161,23 @@ namespace router.Presenter
                 }
             }
 
+
+        }
+
+        public void priamo_pripojena_siet(int rozhranie)
+        {
+            string siet = Praca_s_ip.adresa_siete(IPAddress.Parse(main_view.ip_adresa), IPAddress.Parse(main_view.maska)).ToString();
+            smerovaci_zaznam = new Smerovaci_zaznam("D",siet,main_view.maska,1,0,"X",-1,rozhranie);
+            smerovacia_tabulka.Add(smerovaci_zaznam);
+            updatni_smerovaciu_tabulku();
+        }
+
+        public void updatni_smerovaciu_tabulku()
+        {
+            foreach (var zaznam in smerovacia_tabulka.ToList())
+            {
+                main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet+"/"+Praca_s_ip.sprav_masku(IPAddress.Parse(main_view.maska)) + "       rozhranie: " + zaznam.exit_interface;
+            }
 
         }
 

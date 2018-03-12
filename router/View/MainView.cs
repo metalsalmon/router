@@ -12,7 +12,6 @@ using router.Presenter;
 using System.Net;
 using System.Threading;
 using System.Runtime.InteropServices;
-using router.Model;
 
 namespace router
 {
@@ -41,17 +40,27 @@ namespace router
         public int lb_arp_zaznam_index { get => lb_arp_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
 
         public int casovac { get => Int32.Parse(txt_casovac.Text); set => txt_casovac.Text = value.ToString(); }
-
+        string IView.lb_smerovacia_tabulka { get => throw new NotImplementedException(); set => lb_smerovacia_tabulka.Items.Add(value); }
         public Thread vlakno_rozhranie1 = null, vlakno_rozhranie2 = null;
+
         private void btn_nastav_Click(object sender, EventArgs e)
         {
-            Console.WriteLine(Praca_s_ip.broadcast(IPAddress.Parse(txt_ip_adresa.Text.ToString()),IPAddress.Parse(txt_maska.Text.ToString())));
-            Console.WriteLine(Praca_s_ip.adresa_siete(IPAddress.Parse(txt_ip_adresa.Text.ToString()), IPAddress.Parse(txt_maska.Text.ToString())));
+            
+          //  Console.WriteLine(Praca_s_ip.adresa_siete(IPAddress.Parse(txt_ip_adresa.Text.ToString()), IPAddress.Parse(txt_maska.Text.ToString())));
 
             if (adaptery_index >= 0 && (rb_rozhranie1.Checked || rb_rozhranie2.Checked))
             {
-                if (rb_rozhranie1.Checked) presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1);
-                else presenter.rozhranie2 = presenter.nastav_ip(presenter.rozhranie2);
+                lb_smerovacia_tabulka.Items.Clear();
+                if (rb_rozhranie1.Checked)
+                {
+                    presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1);
+                    presenter.priamo_pripojena_siet(1);
+                }
+                else
+                {
+                    presenter.rozhranie2 = presenter.nastav_ip(presenter.rozhranie2);
+                    presenter.priamo_pripojena_siet(2);
+                }
 
                 try
                 {
