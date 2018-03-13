@@ -46,6 +46,16 @@
             this.rb_rozhranie2 = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lb_smerovacia_tabulka = new System.Windows.Forms.ListBox();
+            this.btnpridaj = new System.Windows.Forms.Button();
+            this.txt_ip_staticke = new System.Windows.Forms.TextBox();
+            this.txt_maska_staticke = new System.Windows.Forms.TextBox();
+            this.lbl_ciel_ip = new System.Windows.Forms.Label();
+            this.lbl_maska = new System.Windows.Forms.Label();
+            this.txt_next_hop = new System.Windows.Forms.TextBox();
+            this.lbl_next_hop = new System.Windows.Forms.Label();
+            this.lbl_rozhranie = new System.Windows.Forms.Label();
+            this.txt_rozhranie_staticke = new System.Windows.Forms.TextBox();
+            this.btn_zmaz_cestu = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -207,11 +217,105 @@
             this.lb_smerovacia_tabulka.Size = new System.Drawing.Size(509, 340);
             this.lb_smerovacia_tabulka.TabIndex = 17;
             // 
+            // btnpridaj
+            // 
+            this.btnpridaj.Location = new System.Drawing.Point(994, 436);
+            this.btnpridaj.Name = "btnpridaj";
+            this.btnpridaj.Size = new System.Drawing.Size(75, 41);
+            this.btnpridaj.TabIndex = 18;
+            this.btnpridaj.Text = "pridaj";
+            this.btnpridaj.UseVisualStyleBackColor = true;
+            this.btnpridaj.Click += new System.EventHandler(this.btnpridaj_Click);
+            // 
+            // txt_ip_staticke
+            // 
+            this.txt_ip_staticke.Location = new System.Drawing.Point(629, 407);
+            this.txt_ip_staticke.Name = "txt_ip_staticke";
+            this.txt_ip_staticke.Size = new System.Drawing.Size(100, 22);
+            this.txt_ip_staticke.TabIndex = 19;
+            // 
+            // txt_maska_staticke
+            // 
+            this.txt_maska_staticke.Location = new System.Drawing.Point(748, 407);
+            this.txt_maska_staticke.Name = "txt_maska_staticke";
+            this.txt_maska_staticke.Size = new System.Drawing.Size(100, 22);
+            this.txt_maska_staticke.TabIndex = 20;
+            // 
+            // lbl_ciel_ip
+            // 
+            this.lbl_ciel_ip.AutoSize = true;
+            this.lbl_ciel_ip.Location = new System.Drawing.Point(626, 387);
+            this.lbl_ciel_ip.Name = "lbl_ciel_ip";
+            this.lbl_ciel_ip.Size = new System.Drawing.Size(67, 17);
+            this.lbl_ciel_ip.TabIndex = 21;
+            this.lbl_ciel_ip.Text = "cielova ip";
+            // 
+            // lbl_maska
+            // 
+            this.lbl_maska.AutoSize = true;
+            this.lbl_maska.Location = new System.Drawing.Point(748, 387);
+            this.lbl_maska.Name = "lbl_maska";
+            this.lbl_maska.Size = new System.Drawing.Size(49, 17);
+            this.lbl_maska.TabIndex = 22;
+            this.lbl_maska.Text = "maska";
+            // 
+            // txt_next_hop
+            // 
+            this.txt_next_hop.Location = new System.Drawing.Point(870, 407);
+            this.txt_next_hop.Name = "txt_next_hop";
+            this.txt_next_hop.Size = new System.Drawing.Size(100, 22);
+            this.txt_next_hop.TabIndex = 23;
+            // 
+            // lbl_next_hop
+            // 
+            this.lbl_next_hop.AutoSize = true;
+            this.lbl_next_hop.Location = new System.Drawing.Point(867, 387);
+            this.lbl_next_hop.Name = "lbl_next_hop";
+            this.lbl_next_hop.Size = new System.Drawing.Size(62, 17);
+            this.lbl_next_hop.TabIndex = 24;
+            this.lbl_next_hop.Text = "next hop";
+            // 
+            // lbl_rozhranie
+            // 
+            this.lbl_rozhranie.AutoSize = true;
+            this.lbl_rozhranie.Location = new System.Drawing.Point(866, 448);
+            this.lbl_rozhranie.Name = "lbl_rozhranie";
+            this.lbl_rozhranie.Size = new System.Drawing.Size(68, 17);
+            this.lbl_rozhranie.TabIndex = 25;
+            this.lbl_rozhranie.Text = "rozhranie";
+            // 
+            // txt_rozhranie_staticke
+            // 
+            this.txt_rozhranie_staticke.Location = new System.Drawing.Point(940, 445);
+            this.txt_rozhranie_staticke.Name = "txt_rozhranie_staticke";
+            this.txt_rozhranie_staticke.Size = new System.Drawing.Size(30, 22);
+            this.txt_rozhranie_staticke.TabIndex = 26;
+            // 
+            // btn_zmaz_cestu
+            // 
+            this.btn_zmaz_cestu.Location = new System.Drawing.Point(1063, 373);
+            this.btn_zmaz_cestu.Name = "btn_zmaz_cestu";
+            this.btn_zmaz_cestu.Size = new System.Drawing.Size(75, 23);
+            this.btn_zmaz_cestu.TabIndex = 27;
+            this.btn_zmaz_cestu.Text = "zmaz";
+            this.btn_zmaz_cestu.UseVisualStyleBackColor = true;
+            this.btn_zmaz_cestu.Click += new System.EventHandler(this.btn_zmaz_cestu_Click);
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 560);
+            this.Controls.Add(this.btn_zmaz_cestu);
+            this.Controls.Add(this.txt_rozhranie_staticke);
+            this.Controls.Add(this.lbl_rozhranie);
+            this.Controls.Add(this.lbl_next_hop);
+            this.Controls.Add(this.txt_next_hop);
+            this.Controls.Add(this.lbl_maska);
+            this.Controls.Add(this.lbl_ciel_ip);
+            this.Controls.Add(this.txt_maska_staticke);
+            this.Controls.Add(this.txt_ip_staticke);
+            this.Controls.Add(this.btnpridaj);
             this.Controls.Add(this.lb_smerovacia_tabulka);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.cb_adaptery);
@@ -255,6 +359,16 @@
         private System.Windows.Forms.RadioButton rb_rozhranie2;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ListBox lb_smerovacia_tabulka;
+        private System.Windows.Forms.Button btnpridaj;
+        private System.Windows.Forms.TextBox txt_ip_staticke;
+        private System.Windows.Forms.TextBox txt_maska_staticke;
+        private System.Windows.Forms.Label lbl_ciel_ip;
+        private System.Windows.Forms.Label lbl_maska;
+        private System.Windows.Forms.TextBox txt_next_hop;
+        private System.Windows.Forms.Label lbl_next_hop;
+        private System.Windows.Forms.Label lbl_rozhranie;
+        private System.Windows.Forms.TextBox txt_rozhranie_staticke;
+        private System.Windows.Forms.Button btn_zmaz_cestu;
     }
 }
 

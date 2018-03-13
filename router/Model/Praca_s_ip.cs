@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -39,11 +40,11 @@ namespace router.Model
         {
             byte[] maska = maska_siete.GetAddressBytes();
             int maska_slash=0;
+            var bit = new BitArray(maska);
 
-            if (BitConverter.IsLittleEndian)
+            for (int i = 0; i < bit.Length; i++)
             {
-                Array.Reverse(maska);
-                maska_slash = BitConverter.ToInt32(maska, 0);
+                if (bit[i] == true) maska_slash++;
             }
             
             return maska_slash;

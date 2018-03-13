@@ -30,6 +30,19 @@ namespace router.Model
             this.exit_interface = exit_interface;
         }
 
+        public override bool Equals(object obj)
+        {
+            var porovnavaci = obj as Smerovaci_zaznam;
+
+            if (porovnavaci == null)
+                return false;
+
+            if (typ != porovnavaci.typ || cielova_siet != porovnavaci.cielova_siet || maska!= porovnavaci.maska || ad!= porovnavaci.ad || metrika!= porovnavaci.metrika || next_hop!= porovnavaci.next_hop
+                || casovac!=porovnavaci.casovac || exit_interface!= porovnavaci.exit_interface)
+                return false;
+
+            return true;
+        }
 
 
     }

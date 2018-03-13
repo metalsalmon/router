@@ -31,7 +31,7 @@ namespace router.Presenter
         private Arp arp;
         public int casovac {get;set;}
         public bool zmaz_arp_tabulku { get; set; }
-        private List<Smerovaci_zaznam> smerovacia_tabulka;
+        public List<Smerovaci_zaznam> smerovacia_tabulka { get; set; }
         private Smerovaci_zaznam smerovaci_zaznam;
       //  private Packet paket;
 
@@ -87,7 +87,7 @@ namespace router.Presenter
                 }
 
                 if (rozhranie2 != null)
-                {main_view.vypis(eth.DestinationHwAddress.ToString());
+                {
                     if (eth.DestinationHwAddress.ToString().Equals(rozhranie2.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF"))
                     {
                         analyzuj(rozhranie2, eth, paket);
@@ -134,9 +134,9 @@ namespace router.Presenter
             if (zastav_vlakno) rozhranie.adapter.Close();
         }
 
-        public void zmaz_arp_zaznam()
+        public void zmaz_smerovaci_zaznam()
         {  
-            arp_tabulka.RemoveAt(main_view.lb_arp_zaznam_index);
+            smerovacia_tabulka.RemoveAt(main_view.lb_smerovaci_zaznam_index);
         }
 
         public void updatni_arp_tabulku()
@@ -166,6 +166,12 @@ namespace router.Presenter
 
         public void priamo_pripojena_siet(int rozhranie)
         {
+            foreach (var zaznam in smerovacia_tabulka.ToList())
+            {
+                if(zaznam.typ=="D" && rozhranie==zaznam.exit_interface) smerovacia_tabulka.Remove(zaznam);
+            }
+
+
             string siet = Praca_s_ip.adresa_siete(IPAddress.Parse(main_view.ip_adresa), IPAddress.Parse(main_view.maska)).ToString();
             smerovaci_zaznam = new Smerovaci_zaznam("D",siet,main_view.maska,1,0,"X",-1,rozhranie);
             smerovacia_tabulka.Add(smerovaci_zaznam);
@@ -176,10 +182,31 @@ namespace router.Presenter
         {
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-                main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet+"/"+Praca_s_ip.sprav_masku(IPAddress.Parse(main_view.maska)) + "       rozhranie: " + zaznam.exit_interface;
+               if(zaznam.typ=="D") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet+"/"+Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)) + "       rozhranie: " + zaznam.exit_interface;
+                if (zaznam.typ == "S" && zaznam.exit_interface==-1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop;
+                else if (zaznam.typ == "S" && zaznam.next_hop == "X") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + "      [" +zaznam.ad+"/"+zaznam.metrika+"]       cez: " + zaznam.exit_interface;
+                else if (zaznam.typ == "S" && zaznam.next_hop != "X" && zaznam.exit_interface!=-1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + "         [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + "     " + zaznam.exit_interface;
+            }
+            
+        }
+
+        public void pridaj_staticku_cestu(int next_hop)
+        {
+            bool vloz = true;
+            if (next_hop == 1) smerovaci_zaznam = new Smerovaci_zaznam("S",main_view.staticke_ip,main_view.staticke_maska,1,0,main_view.staticke_next_hop,-1,-1);
+            if (next_hop == 2) smerovaci_zaznam = new Smerovaci_zaznam("S", main_view.staticke_ip, main_view.staticke_maska, 1, 0, "X", -1, int.Parse(main_view.staticke_rozhranie));
+            if (next_hop == 3) smerovaci_zaznam = new Smerovaci_zaznam("S", main_view.staticke_ip, main_view.staticke_maska, 1, 0, main_view.staticke_next_hop, -1, int.Parse(main_view.staticke_rozhranie));
+
+            foreach (var zaznam in smerovacia_tabulka.ToList())
+            {
+                if (zaznam.Equals(smerovaci_zaznam)) vloz = false;
             }
 
-        }
+            if (vloz) smerovacia_tabulka.Add(smerovaci_zaznam);
+
+            updatni_smerovaciu_tabulku();
+
+            }
 
         public void arp_request(Rozhranie rozhranie)
         {

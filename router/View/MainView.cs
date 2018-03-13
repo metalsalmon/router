@@ -37,16 +37,19 @@ namespace router
         
         public string arp { get => txt_arp.Text.ToString(); set => txt_arp.Text = value; }
         public string lb_arp_zaznam { get => lb_arp_tabulka.SelectedItem.ToString(); set => lb_arp_tabulka.Items.Add(value); }
-        public int lb_arp_zaznam_index { get => lb_arp_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
+        public int lb_smerovaci_zaznam_index { get => lb_smerovacia_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
 
         public int casovac { get => Int32.Parse(txt_casovac.Text); set => txt_casovac.Text = value.ToString(); }
         string IView.lb_smerovacia_tabulka { get => throw new NotImplementedException(); set => lb_smerovacia_tabulka.Items.Add(value); }
+        public string staticke_ip { get => txt_ip_staticke.Text; set =>txt_ip_staticke.Text = value; }
+        public string staticke_maska { get => txt_maska_staticke.Text; set => txt_maska_staticke.Text = value; }
+        public string staticke_next_hop { get => txt_next_hop.Text; set => txt_next_hop.Text = value; }
+        public string staticke_rozhranie { get => txt_rozhranie_staticke.Text; set => txt_rozhranie_staticke.Text = value; }
+
         public Thread vlakno_rozhranie1 = null, vlakno_rozhranie2 = null;
 
         private void btn_nastav_Click(object sender, EventArgs e)
         {
-            
-          //  Console.WriteLine(Praca_s_ip.adresa_siete(IPAddress.Parse(txt_ip_adresa.Text.ToString()), IPAddress.Parse(txt_maska.Text.ToString())));
 
             if (adaptery_index >= 0 && (rb_rozhranie1.Checked || rb_rozhranie2.Checked))
             {
@@ -88,10 +91,6 @@ namespace router
             }
         }
 
-        public void vypis(string omg)
-        {
-            Console.Write(omg);
-        }
         public void vymaz_arp()
         {
             lb_arp_tabulka.Items.Clear();
@@ -124,13 +123,6 @@ namespace router
 
         private void btn_zmaz_arp_Click(object sender, EventArgs e)
         {
-            /*    if (lb_arp_tabulka.SelectedIndex == -1){
-                    MessageBox.Show("vyber zaznam!");
-                }else
-                {            
-                    presenter.zmaz_arp_zaznam();
-                    lb_arp_tabulka.Items.RemoveAt(lb_arp_zaznam_index);
-                    */
             lb_arp_tabulka.Items.Clear();
             presenter.zmaz_arp_tabulku = true;
             presenter.updatni_arp_tabulku();
@@ -179,6 +171,27 @@ namespace router
                 txt_ip_adresa.Text = String.Empty;
                 txt_maska.Text = String.Empty;
             }
+        }
+
+        private void btn_zmaz_cestu_Click(object sender, EventArgs e)
+        {
+            if (lb_smerovacia_tabulka.SelectedIndex == -1)
+            {
+                MessageBox.Show("vyber zaznam!");
+            }
+            else
+            {
+                presenter.zmaz_smerovaci_zaznam();
+                lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);
+            }
+            }
+
+        private void btnpridaj_Click(object sender, EventArgs e)
+        {
+            lb_smerovacia_tabulka.Items.Clear();
+            if (txt_rozhranie_staticke.Text=="")presenter.pridaj_staticku_cestu(1);
+            else if (txt_next_hop.Text == "") presenter.pridaj_staticku_cestu(2);
+            else if((txt_rozhranie_staticke.Text != "") &&(txt_rozhranie_staticke.Text != "")) presenter.pridaj_staticku_cestu(3);
         }
     }
 }
