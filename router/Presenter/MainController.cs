@@ -176,7 +176,7 @@ namespace router.Presenter
                             {
                                 if (smerovaci_zaznam.next_hop!="X" && Praca_s_ip.zisti_podsiet(IPAddress.Parse(smerovaci_zaznam.next_hop), IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
                                 {
-                                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
+                                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska))) 
                                     {
                                         najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
                                         smerovaci_zaznam = zaznam;
