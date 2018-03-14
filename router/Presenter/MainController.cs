@@ -147,32 +147,62 @@ namespace router.Presenter
 
                 Smerovaci_zaznam smerovaci_zaznam = null;
                 int najdlhsi_prefix = 0;
-
-                foreach (var zaznam in smerovacia_tabulka.ToList())
-                {
-
-                    if (Praca_s_ip.zisti_podsiet(ciel_address, IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
+               
+                    foreach (var zaznam in smerovacia_tabulka.ToList())
                     {
-                        main_view.vypis("true",1);
-                        if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
+
+                        if (Praca_s_ip.zisti_podsiet(ciel_address, IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
                         {
-                            najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
-                            main_view.vypis("prefix: ",najdlhsi_prefix);
-                            main_view.vypis(zaznam.cielova_siet, 55);
-                            main_view.vypis(ciel_address.ToString(), 55);
-                            main_view.vypis("*--------------------", 0);
-                            smerovaci_zaznam = zaznam;
+                            main_view.vypis("true", 1);
+                            if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
+                            {
+                                najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
+                                smerovaci_zaznam = zaznam;
+                            }
                         }
                     }
-                }
-               
-                if (smerovaci_zaznam != null)
+                
+                string via=null;
+                if ((smerovaci_zaznam!=null) && (smerovaci_zaznam.exit_interface == -1))
                 {
-                    main_view.vypis(smerovaci_zaznam.cielova_siet, -1);
+                    via = smerovaci_zaznam.next_hop;
+                    while (true)
+                    {
+                        najdlhsi_prefix = 0;
+                        if (smerovaci_zaznam.exit_interface == -1)
+                        {
+                           
+                            foreach (var zaznam in smerovacia_tabulka.ToList())
+                            {
+                                if (smerovaci_zaznam.next_hop!="X" && Praca_s_ip.zisti_podsiet(IPAddress.Parse(smerovaci_zaznam.next_hop), IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
+                                {
+                                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
+                                    {
+                                        najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
+                                        smerovaci_zaznam = zaznam;
+                                    }
 
-                    if (rozhranie == rozhranie1) rozhranie = rozhranie2;
-                    else rozhranie = rozhranie1;
-                    Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam));
+                                }
+                            }
+                        }
+                        else break;
+                    }
+                }
+
+                if ((smerovaci_zaznam != null) && (smerovaci_zaznam.exit_interface == -1) && (smerovaci_zaznam.next_hop != "X"))
+                {
+                    via = smerovaci_zaznam.next_hop;
+                }
+
+                    if (smerovaci_zaznam != null)
+                {
+                    main_view.vypis(smerovaci_zaznam.exit_interface.ToString(), -1);
+                   
+
+                    if (smerovaci_zaznam.exit_interface == 1) rozhranie = rozhranie1;
+                    if (smerovaci_zaznam.exit_interface == 2) rozhranie = rozhranie2;
+
+                    Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, ciel_address));
                     posielanie.Start();
 
                 }
@@ -181,7 +211,7 @@ namespace router.Presenter
             if (zastav_vlakno) rozhranie.adapter.Close();
         }
 
-        public void preposli(Rozhranie rozhranie, EthernetPacket eth, Smerovaci_zaznam smerovaci_zaznam)
+        public void preposli(Rozhranie rozhranie, EthernetPacket eth, Smerovaci_zaznam smerovaci_zaznam, string via, IPAddress ciel_adres)
         {
             bool naslo = false;
             int pokus_arp = 3;
@@ -191,8 +221,9 @@ namespace router.Presenter
 
                 foreach (var zaznam in arp_tabulka.ToList())
                 {
-                    if (zaznam.ip == smerovaci_zaznam.cielova_siet || zaznam.ip == smerovaci_zaznam.next_hop)
+                    if (zaznam.ip == via || zaznam.ip== ciel_adres.ToString())
                     {
+                        main_view.vypis("podiela ", 6);
                         naslo = true;
                         eth.DestinationHwAddress = PhysicalAddress.Parse(zaznam.mac);
                         eth.SourceHwAddress = rozhranie.adapter.MacAddress;
@@ -203,12 +234,12 @@ namespace router.Presenter
                 }
                     if (!naslo)
                     {
-                        if(smerovaci_zaznam.typ!="D") arp_request(rozhranie, IPAddress.Parse(smerovaci_zaznam.next_hop));
-                        else arp_request(rozhranie, IPAddress.Parse(smerovaci_zaznam.cielova_siet));
+                    main_view.vypis("arp"+ smerovaci_zaznam.next_hop , 6);
+                    if (via!=null) arp_request(rozhranie, IPAddress.Parse(via));
+                    else arp_request(rozhranie, ciel_adres);   //TOTO OPRAV LENOCH!
 
                     System.Threading.Thread.Sleep(1000);
-                    }
-                
+                    }     
             }
             pokus_arp = 3;
 

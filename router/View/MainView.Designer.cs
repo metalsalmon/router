@@ -73,14 +73,14 @@
             // 
             this.txt_ip_adresa.Location = new System.Drawing.Point(103, 27);
             this.txt_ip_adresa.Name = "txt_ip_adresa";
-            this.txt_ip_adresa.Size = new System.Drawing.Size(100, 22);
+            this.txt_ip_adresa.Size = new System.Drawing.Size(111, 22);
             this.txt_ip_adresa.TabIndex = 2;
             // 
             // txt_maska
             // 
             this.txt_maska.Location = new System.Drawing.Point(103, 64);
             this.txt_maska.Name = "txt_maska";
-            this.txt_maska.Size = new System.Drawing.Size(100, 22);
+            this.txt_maska.Size = new System.Drawing.Size(111, 22);
             this.txt_maska.TabIndex = 3;
             // 
             // btn_arp
@@ -104,14 +104,14 @@
             // 
             this.lb_arp_tabulka.FormattingEnabled = true;
             this.lb_arp_tabulka.ItemHeight = 16;
-            this.lb_arp_tabulka.Location = new System.Drawing.Point(290, 227);
+            this.lb_arp_tabulka.Location = new System.Drawing.Point(263, 227);
             this.lb_arp_tabulka.Name = "lb_arp_tabulka";
-            this.lb_arp_tabulka.Size = new System.Drawing.Size(284, 100);
+            this.lb_arp_tabulka.Size = new System.Drawing.Size(360, 100);
             this.lb_arp_tabulka.TabIndex = 6;
             // 
             // btn_zmaz_arp
             // 
-            this.btn_zmaz_arp.Location = new System.Drawing.Point(293, 343);
+            this.btn_zmaz_arp.Location = new System.Drawing.Point(263, 344);
             this.btn_zmaz_arp.Name = "btn_zmaz_arp";
             this.btn_zmaz_arp.Size = new System.Drawing.Size(75, 23);
             this.btn_zmaz_arp.TabIndex = 8;

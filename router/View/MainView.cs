@@ -192,6 +192,11 @@ namespace router
             if (txt_rozhranie_staticke.Text=="")presenter.pridaj_staticku_cestu(1);
             else if (txt_next_hop.Text == "") presenter.pridaj_staticku_cestu(2);
             else if((txt_rozhranie_staticke.Text != "") &&(txt_rozhranie_staticke.Text != "")) presenter.pridaj_staticku_cestu(3);
+
+            txt_ip_staticke.Text = "";
+            txt_maska_staticke.Text = "";
+            txt_rozhranie_staticke.Text = "";
+            txt_next_hop.Text = "";
         }
         public void vypis(string text,int cislo)
         {
