@@ -22,5 +22,6 @@ namespace router.View
         string staticke_next_hop { get; set; }
         string staticke_rozhranie { get; set; }
         void vymaz_arp();
+        void vypis(string text,int cislo);
     }
 }

@@ -50,5 +50,13 @@ namespace router.Model
             return maska_slash;
         }
 
+        public static bool zisti_podsiet(IPAddress zisti_ip, IPAddress ip_siete, IPAddress maska_siete)
+        {
+            IPAddress siet1 = adresa_siete(zisti_ip, maska_siete);
+            IPAddress siet2 = adresa_siete(ip_siete, maska_siete);
+
+            return siet1.Equals(siet2);
+        }
+
     }
 }

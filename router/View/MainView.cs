@@ -98,7 +98,7 @@ namespace router
 
         private void btn_arp_Click(object sender, EventArgs e)
         {
-              presenter.arp_request(presenter.rozhranie2);
+              presenter.arp_request(presenter.rozhranie2, IPAddress.Parse(arp));
 
         }
 
@@ -193,5 +193,11 @@ namespace router
             else if (txt_next_hop.Text == "") presenter.pridaj_staticku_cestu(2);
             else if((txt_rozhranie_staticke.Text != "") &&(txt_rozhranie_staticke.Text != "")) presenter.pridaj_staticku_cestu(3);
         }
+        public void vypis(string text,int cislo)
+        {
+            Console.WriteLine(text+"  "+cislo);
+
+        }
+
     }
 }
