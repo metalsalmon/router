@@ -69,13 +69,13 @@ namespace router
                 {
                     if (vlakno_rozhranie1 == null && rb_rozhranie1.Checked)
                     {
-                        vlakno_rozhranie1 = new Thread(() => presenter.pocuvaj(presenter.rozhranie1));
+                        vlakno_rozhranie1 = new Thread(() => presenter.pocuvaj_rozhranie1(presenter.rozhranie1));
                         vlakno_rozhranie1.Start();
                     }
 
                     if (vlakno_rozhranie2 == null && rb_rozhranie2.Checked)
                     {
-                        vlakno_rozhranie2 = new Thread(() => presenter.pocuvaj(presenter.rozhranie2));
+                        vlakno_rozhranie2 = new Thread(() => presenter.pocuvaj_rozhranie2(presenter.rozhranie2));
                         vlakno_rozhranie2.Start();
                     }
 

@@ -25,7 +25,6 @@ namespace router.Presenter
         Socket mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
         public List<Arp> arp_tabulka;
         public ARPPacket arp_packet { get; set; }
-        public int omg = 5;
         private bool pridaj_arp_zaznam = true;
         public bool zastav_vlakno { get; set; }
         private Arp arp;
@@ -61,34 +60,47 @@ namespace router.Presenter
             return rozhranie;
         }
 
-        public void pocuvaj(Rozhranie rozhranie)
+        public void pocuvaj_rozhranie1(Rozhranie rozhranie)
         {
-            rozhranie.adapter.OnPacketArrival += new PacketArrivalEventHandler(zachytenie);
+            rozhranie.adapter.OnPacketArrival += new PacketArrivalEventHandler(zachytenie_rozhranie1);
             rozhranie.adapter.Open(DeviceMode.Promiscuous);
             rozhranie.adapter.StartCapture();
         }
 
-        public void zachytenie(object sender, CaptureEventArgs e)
+        public void pocuvaj_rozhranie2(Rozhranie rozhranie)
+        {
+            rozhranie.adapter.OnPacketArrival += new PacketArrivalEventHandler(zachytenie_rozhranie2);
+            rozhranie.adapter.Open(DeviceMode.Promiscuous);
+            rozhranie.adapter.StartCapture();
+        }
+
+        public void zachytenie_rozhranie1(object sender, CaptureEventArgs e)
         {
             Packet paket = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
-
+            zachytenie(paket,1);
+            
+        }
+        public void zachytenie_rozhranie2(object sender, CaptureEventArgs e)
+        {
+            Packet paket = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+            zachytenie(paket,2);
+        }
+        public void zachytenie(Packet paket, int rozhranie)
+        {
             if (paket is EthernetPacket)
             {
                 EthernetPacket eth = ((EthernetPacket)paket);
 
-                if (rozhranie1 != null)
+                if (rozhranie1 != null && rozhranie2 !=null)
                 {
-                    if (eth.DestinationHwAddress.ToString().Equals(rozhranie1.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF"))
+                    if (rozhranie==1 && (eth.DestinationHwAddress.ToString().Equals(rozhranie1.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF")))
                     {
-                        if (rozhranie2 != null) analyzuj(rozhranie1, eth, paket);
+                        analyzuj(rozhranie1, eth, paket);
                     }
-                }
 
-                if (rozhranie2 != null)
-                {
-                    if (eth.DestinationHwAddress.ToString().Equals(rozhranie2.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF"))
+                    if (rozhranie==2 && (eth.DestinationHwAddress.ToString().Equals(rozhranie2.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF")))
                     {
-                        if (rozhranie1 != null) analyzuj(rozhranie2, eth, paket);
+                        analyzuj(rozhranie2, eth, paket);
                     }
                 }
             }
@@ -101,13 +113,15 @@ namespace router.Presenter
                 IPAddress odosielatel_address = new IPAddress(paket.Bytes.Skip(28).Take(4).ToArray());
                 IPAddress ciel_address = new IPAddress(paket.Bytes.Skip(38).Take(4).ToArray());
 
+
+
                 if (ciel_address.ToString().Equals("255.255.255.255") || ciel_address.ToString().Equals(rozhranie.ip_adresa))
                 {
 
 
                     if (paket.Bytes[21] == 1)
                     {
-                        arp_reply(eth, rozhranie, odosielatel_address);  //dosla mi request tak odpovedam
+                        arp_reply(eth, rozhranie, odosielatel_address,ciel_address);  //dosla mi request tak odpovedam
                     }
                     else if (paket.Bytes[21] == 2)
                     {
@@ -128,6 +142,10 @@ namespace router.Presenter
                         }
                         pridaj_arp_zaznam = true;
                     }
+                }
+                else 
+                {
+                   if (paket.Bytes[21] == 1) arp_reply(eth, rozhranie, odosielatel_address,ciel_address);
                 }
             }
 
@@ -324,13 +342,13 @@ namespace router.Presenter
             }
         }
 
-        public void arp_reply(EthernetPacket eth, Rozhranie rozhranie, IPAddress odosielatel_address)
+        public void arp_reply(EthernetPacket eth, Rozhranie rozhranie, IPAddress odosielatel_address, IPAddress ciel_adres)
         {
             if (rozhranie.adapter.MacAddress != null)
             {
                 EthernetPacket ethernet_packet = new EthernetPacket(rozhranie.adapter.MacAddress, eth.SourceHwAddress, EthernetPacketType.Arp);
-                arp_packet = new ARPPacket(ARPOperation.Response, eth.SourceHwAddress, IPAddress.Parse(odosielatel_address.ToString()), rozhranie.adapter.MacAddress, IPAddress.Parse(rozhranie.ip_adresa));
-
+               arp_packet = new ARPPacket(ARPOperation.Response, eth.SourceHwAddress, odosielatel_address, rozhranie.adapter.MacAddress, ciel_adres);
+            
                 ethernet_packet.PayloadPacket = arp_packet;
                 rozhranie.adapter.SendPacket(ethernet_packet);
             }
