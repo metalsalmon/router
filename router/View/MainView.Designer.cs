@@ -106,7 +106,7 @@
             this.lb_arp_tabulka.ItemHeight = 16;
             this.lb_arp_tabulka.Location = new System.Drawing.Point(263, 227);
             this.lb_arp_tabulka.Name = "lb_arp_tabulka";
-            this.lb_arp_tabulka.Size = new System.Drawing.Size(360, 100);
+            this.lb_arp_tabulka.Size = new System.Drawing.Size(397, 100);
             this.lb_arp_tabulka.TabIndex = 6;
             // 
             // btn_zmaz_arp
@@ -170,7 +170,7 @@
             this.cb_adaptery.Location = new System.Drawing.Point(220, 27);
             this.cb_adaptery.Name = "cb_adaptery";
             this.cb_adaptery.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.cb_adaptery.Size = new System.Drawing.Size(387, 24);
+            this.cb_adaptery.Size = new System.Drawing.Size(440, 24);
             this.cb_adaptery.TabIndex = 13;
             // 
             // rb_rozhranie1
@@ -212,7 +212,7 @@
             // 
             this.lb_smerovacia_tabulka.FormattingEnabled = true;
             this.lb_smerovacia_tabulka.ItemHeight = 16;
-            this.lb_smerovacia_tabulka.Location = new System.Drawing.Point(629, 27);
+            this.lb_smerovacia_tabulka.Location = new System.Drawing.Point(666, 12);
             this.lb_smerovacia_tabulka.Name = "lb_smerovacia_tabulka";
             this.lb_smerovacia_tabulka.Size = new System.Drawing.Size(509, 340);
             this.lb_smerovacia_tabulka.TabIndex = 17;
