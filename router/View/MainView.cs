@@ -112,11 +112,11 @@ namespace router
         {
             try
             {
-                presenter.casovac = Int32.Parse(txt_casovac.Text);
+                presenter.arp_casovac = Int32.Parse(txt_casovac.Text);
             }
             catch(Exception)
             {
-                presenter.casovac = 50;
+                presenter.arp_casovac = 50;
                
             }
         }
