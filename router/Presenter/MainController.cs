@@ -140,7 +140,7 @@ namespace router.Presenter
                     if (paket.Bytes[21] == 1)
                     {
                         Smerovaci_zaznam naslo_zaznam = null;
-                        naslo_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres, naslo_zaznam);
+                        naslo_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
                         if(naslo_zaznam != null) arp_reply(eth, rozhranie, odosielatel_adres, ciel_adres);
                     }
                 }
@@ -152,63 +152,47 @@ namespace router.Presenter
                 IPAddress ciel_adres = new IPAddress(paket.Bytes.Skip(30).Take(4).ToArray());
                 Smerovaci_zaznam smerovaci_zaznam = null;
                 string via = null;
-                int najdlhsi_prefix;
 
-                smerovaci_zaznam=najdi_zaznam_v_smerovacej_tabulke(ciel_adres,smerovaci_zaznam);
+                smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
 
-                
-                if(smerovaci_zaznam != null)
+                if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface == -1)
+                {
+                    smerovaci_zaznam = rekurzivne_prehladanie(smerovaci_zaznam,ref via);
+                }
+
+                if (smerovaci_zaznam != null)
                 { 
-                if (smerovaci_zaznam.exit_interface == -1)
-                {
-                    via = smerovaci_zaznam.next_hop;
-                    while (true)
-                    {
-                        najdlhsi_prefix = -1;
-                        if (smerovaci_zaznam.exit_interface == -1)
-                        {
-
-                            foreach (var zaznam in smerovacia_tabulka.ToList())
-                            {
-                                if (smerovaci_zaznam.next_hop != "X" && Praca_s_ip.zisti_podsiet(IPAddress.Parse(smerovaci_zaznam.next_hop), IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
-                                {
-                                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
-                                    {
-                                        najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
-                                        smerovaci_zaznam = zaznam;
-                                    }
-
-                                }
-                            }
-                        }
-                        else break;
-                    }
-                }
-
-                if ((smerovaci_zaznam.exit_interface == -1) && (smerovaci_zaznam.next_hop != "X"))
-                {
-                    via = smerovaci_zaznam.next_hop;
-                }
-
                     if (smerovaci_zaznam.exit_interface == 1) rozhranie = rozhranie1;
                     if (smerovaci_zaznam.exit_interface == 2) rozhranie = rozhranie2;
 
                     Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, ciel_adres));
                     posielanie.Start();
-
                 }
-
             }
             if (zastav_vlakno) rozhranie.adapter.Close();
         }
 
-        public Smerovaci_zaznam najdi_zaznam_v_smerovacej_tabulke(IPAddress ciel_adres,Smerovaci_zaznam smerovaci_zaznam)
+        public Smerovaci_zaznam rekurzivne_prehladanie(Smerovaci_zaznam smerovaci_zaznam ,ref string via)
+        {
+            while (true)
+            {
+                if (smerovaci_zaznam.exit_interface == -1)
+                {
+                    via = smerovaci_zaznam.next_hop;
+                    smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(IPAddress.Parse(smerovaci_zaznam.next_hop));
+                    if (smerovaci_zaznam == null) return null;
+                }
+                else return smerovaci_zaznam;
+            }
+        }
+
+        public Smerovaci_zaznam najdi_zaznam_v_smerovacej_tabulke(IPAddress ciel_adres)
         {
             int najdlhsi_prefix = -1;
-            
+            Smerovaci_zaznam smerovaci_zaznam = null;
+
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-
                 if (Praca_s_ip.zisti_podsiet(ciel_adres, IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
                 {
                     if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
