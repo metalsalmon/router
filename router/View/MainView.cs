@@ -56,12 +56,12 @@ namespace router
                 lb_smerovacia_tabulka.Items.Clear();
                 if (rb_rozhranie1.Checked)
                 {
-                    presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1);
+                    presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1,1);
                     presenter.priamo_pripojena_siet(1);
                 }
                 else
                 {
-                    presenter.rozhranie2 = presenter.nastav_ip(presenter.rozhranie2);
+                    presenter.rozhranie2 = presenter.nastav_ip(presenter.rozhranie2,2);
                     presenter.priamo_pripojena_siet(2);
                 }
 

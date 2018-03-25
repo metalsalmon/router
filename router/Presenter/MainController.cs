@@ -50,9 +50,9 @@ namespace router.Presenter
             }
         }
 
-        public Rozhranie nastav_ip(Rozhranie rozhranie)
+        public Rozhranie nastav_ip(Rozhranie rozhranie,int cislo_rozhrania)
         {
-            rozhranie = new Rozhranie(zoznam_adapterov[main_view.adaptery_index], main_view.ip_adresa, main_view.maska);
+            rozhranie = new Rozhranie(zoznam_adapterov[main_view.adaptery_index], main_view.ip_adresa, main_view.maska, cislo_rozhrania);
             return rozhranie;
         }
 
@@ -108,7 +108,7 @@ namespace router.Presenter
             {
                 IPAddress odosielatel_adres = new IPAddress(paket.Bytes.Skip(28).Take(4).ToArray());
                 IPAddress ciel_adres = new IPAddress(paket.Bytes.Skip(38).Take(4).ToArray());
-
+                
                 if (ciel_adres.ToString().Equals("255.255.255.255") || ciel_adres.ToString().Equals(rozhranie.ip_adresa))
                 {
                     if (paket.Bytes[21] == 1)
@@ -137,37 +137,50 @@ namespace router.Presenter
                 }
                 else 
                 {
-                    if (paket.Bytes[21] == 1)
+                    if (paket.Bytes[21] == 1)       // PROXY ARP
                     {
                         Smerovaci_zaznam naslo_zaznam = null;
                         naslo_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
-                        if(naslo_zaznam != null) arp_reply(eth, rozhranie, odosielatel_adres, ciel_adres);
+                        if (naslo_zaznam != null && naslo_zaznam.exit_interface == -1)
+                        {
+                            string via = null;
+                            naslo_zaznam = rekurzivne_prehladanie(naslo_zaznam, ref via);
+                        }
+                        if (naslo_zaznam != null && naslo_zaznam.exit_interface != -1 && (rozhranie.cislo_rozhrania!=naslo_zaznam.exit_interface))
+                            arp_reply(eth, rozhranie, odosielatel_adres, ciel_adres);
                     }
                 }
             }
-
-            else if (!eth.Type.ToString().Equals("Arp"))
+            else if(eth.Type.ToString().Equals("IpV4"))
             {
-                IPAddress odosielatel_address = new IPAddress(paket.Bytes.Skip(26).Take(4).ToArray());
-                IPAddress ciel_adres = new IPAddress(paket.Bytes.Skip(30).Take(4).ToArray());
-                Smerovaci_zaznam smerovaci_zaznam = null;
-                string via = null;
+                //   if ((--paket.Bytes[22]) > 0) {
+                
+                    IPAddress odosielatel_address = new IPAddress(paket.Bytes.Skip(26).Take(4).ToArray());
+                    IPAddress ciel_adres = new IPAddress(paket.Bytes.Skip(30).Take(4).ToArray());
+                    Smerovaci_zaznam smerovaci_zaznam = null;
+                    string via = null;
 
-                smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
+                    smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
 
-                if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface == -1)
-                {
-                    smerovaci_zaznam = rekurzivne_prehladanie(smerovaci_zaznam,ref via);
-                }
+                    if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface == -1)
+                    {
+                        smerovaci_zaznam = rekurzivne_prehladanie(smerovaci_zaznam, ref via);
+                    }
 
-                if (smerovaci_zaznam != null)
-                { 
-                    if (smerovaci_zaznam.exit_interface == 1) rozhranie = rozhranie1;
-                    if (smerovaci_zaznam.exit_interface == 2) rozhranie = rozhranie2;
+                    if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface != -1 && smerovaci_zaznam.next_hop != "X")
+                    {
+                        via = smerovaci_zaznam.next_hop;
+                    }
 
-                    Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, ciel_adres));
-                    posielanie.Start();
-                }
+                    if (smerovaci_zaznam != null)
+                    {
+                        if (smerovaci_zaznam.exit_interface == 1) rozhranie = rozhranie1;
+                        if (smerovaci_zaznam.exit_interface == 2) rozhranie = rozhranie2;
+
+                        Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, ciel_adres));
+                        posielanie.Start();
+                    }
+            //    }
             }
             if (zastav_vlakno) rozhranie.adapter.Close();
         }
@@ -182,7 +195,7 @@ namespace router.Presenter
                     smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(IPAddress.Parse(smerovaci_zaznam.next_hop));
                     if (smerovaci_zaznam == null) return null;
                 }
-                else return smerovaci_zaznam;
+                else return smerovaci_zaznam; 
             }
         }
 
@@ -201,7 +214,6 @@ namespace router.Presenter
                         smerovaci_zaznam = zaznam;
                     }
                 }
-
             }
             if (smerovaci_zaznam != null) return smerovaci_zaznam;
             else return null;
@@ -212,12 +224,11 @@ namespace router.Presenter
             bool naslo = false;
             int pokus_arp = 3;
 
-            while (pokus_arp-- > 0)
-            {
-
+            while (pokus_arp > 0)
+            {       
                 foreach (var zaznam in arp_tabulka.ToList())
                 {
-                    if (zaznam.ip == via || zaznam.ip == ciel_adres.ToString())
+                    if (zaznam.ip == via || (via==null && zaznam.ip == ciel_adres.ToString()))
                     {
                         naslo = true;
                         eth.DestinationHwAddress = PhysicalAddress.Parse(zaznam.mac);
@@ -229,16 +240,12 @@ namespace router.Presenter
                 }
                 if (!naslo)
                 {
-                    if(via!=null)  main_view.vypis(via, 2);
-
                     if (via != null) arp_request(rozhranie, IPAddress.Parse(via));
-                    else arp_request(rozhranie, ciel_adres);   
+                    else arp_request(rozhranie, ciel_adres);
 
-                    System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(500);
                 }
             }
-            pokus_arp = 3;
-
         }
 
         public void zmaz_smerovaci_zaznam()
