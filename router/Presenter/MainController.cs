@@ -27,6 +27,11 @@ namespace router.Presenter
         public int arp_casovac { get; set; }
         public bool zmaz_arp_tabulku { get; set; }
         public List<Smerovaci_zaznam> smerovacia_tabulka { get; set; }
+        public List<Rip> rip_databaza { get; set; }
+        public int update_casovac { get; set; }
+        public int holddown_casovac { get; set; }
+        public int flush_casovac { get; set; }
+        public int invalid_casovac { get; set; }
 
         public MainController(IView view)
         {
@@ -39,6 +44,10 @@ namespace router.Presenter
             zastav_vlakno = false;
             arp_casovac = 50;
             zmaz_arp_tabulku = false;
+            update_casovac = 30;
+            holddown_casovac = 180;
+            flush_casovac = 240;
+            invalid_casovac = 180;
         }
 
         public void zobraz_sietove_adaptery()
@@ -90,12 +99,12 @@ namespace router.Presenter
 
                 if (rozhranie1 != null && rozhranie2 !=null)
                 {
-                    if (rozhranie==1 && (eth.DestinationHwAddress.ToString().Equals(rozhranie1.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF")))
+                    if (rozhranie==1 && (eth.DestinationHwAddress.ToString().Equals(rozhranie1.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF") || eth.DestinationHwAddress.ToString().Equals("01005E000009")))
                     {
                         analyzuj(rozhranie1, eth, paket);
                     }
 
-                    if (rozhranie==2 && (eth.DestinationHwAddress.ToString().Equals(rozhranie2.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF")))
+                    if (rozhranie==2 && (eth.DestinationHwAddress.ToString().Equals(rozhranie2.adapter.MacAddress.ToString()) || eth.DestinationHwAddress.ToString().Equals("FFFFFFFFFFFF") || eth.DestinationHwAddress.ToString().Equals("01005E000009")))
                     {
                         analyzuj(rozhranie2, eth, paket);
                     }
@@ -159,6 +168,10 @@ namespace router.Presenter
                     IPAddress ciel_adres = new IPAddress(paket.Bytes.Skip(30).Take(4).ToArray());
                     Smerovaci_zaznam smerovaci_zaznam = null;
                     string via = null;
+               
+                if (ciel_adres.ToString() =="224.0.0.9" && ((int)eth.Bytes[42]==2) && ((int)eth.Bytes[43] == 2)) spracuj_rip(eth, paket,rozhranie);
+                else
+                {
 
                     smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(ciel_adres);
 
@@ -180,9 +193,48 @@ namespace router.Presenter
                         Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, ciel_adres));
                         posielanie.Start();
                     }
+                }
             //    }
             }
             if (zastav_vlakno) rozhranie.adapter.Close();
+        }
+
+        public void spracuj_rip(EthernetPacket eth,Packet packet,Rozhranie rozhranie)
+        {
+            Rip rip_zaznam;
+           int dlzka= eth.Bytes.Length - 46;
+            int pocet = dlzka / 20;
+            int cislo_rozhrania;
+            bool pridaj_do_databazy = true;
+
+            if (rozhranie == rozhranie1) cislo_rozhrania = 1;
+            else cislo_rozhrania = 2;
+
+            while ((pocet--) > 0)
+            {
+                // main_view.vypis("no aspon daco", 5);
+                rip_zaznam = new Rip("R", Praca_s_ip.adresa_siete(new IPAddress(eth.Bytes.Skip(50).Take(4).ToArray()), new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray())),
+                                         new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray()), 120, (int)eth.Bytes[65], new IPAddress(eth.Bytes.Skip(58).Take(4).ToArray()),
+                                         update_casovac, invalid_casovac, holddown_casovac, flush_casovac, cislo_rozhrania);
+
+                foreach (var zaznam in smerovacia_tabulka.ToList())
+                {
+
+
+                }
+
+                    foreach (var zaznam in rip_databaza.ToList())
+                {
+                    if (zaznam.cielova_siet == rip_zaznam.cielova_siet && zaznam.maska == rip_zaznam.maska && zaznam.metrika == rip_zaznam.metrika) pridaj_do_databazy = false; 
+                }
+                if (pridaj_do_databazy)
+                {
+                    rip_databaza.Add(rip_zaznam);
+                }
+
+                if (pridaj_do_databazy == false) pridaj_do_databazy = true;
+            }
+                   
         }
 
         public Smerovaci_zaznam rekurzivne_prehladanie(Smerovaci_zaznam smerovaci_zaznam ,ref string via)
@@ -274,8 +326,6 @@ namespace router.Presenter
 
                 }
             }
-
-
         }
 
         public void priamo_pripojena_siet(int rozhranie)
