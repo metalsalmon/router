@@ -27,7 +27,7 @@ namespace router.Presenter
         public int arp_casovac { get; set; }
         public bool zmaz_arp_tabulku { get; set; }
         public List<Smerovaci_zaznam> smerovacia_tabulka { get; set; }
-        public List<Rip> rip_databaza { get; set; }
+        public List<Smerovaci_zaznam> rip_databaza { get; set; }
         public int update_casovac { get; set; }
         public int holddown_casovac { get; set; }
         public int flush_casovac { get; set; }
@@ -169,7 +169,7 @@ namespace router.Presenter
                     Smerovaci_zaznam smerovaci_zaznam = null;
                     string via = null;
                
-                if (ciel_adres.ToString() =="224.0.0.9" && ((int)eth.Bytes[42]==2) && ((int)eth.Bytes[43] == 2)) spracuj_rip(eth, paket,rozhranie);
+                if (ciel_adres.ToString() =="224.0.0.9" && ((int)eth.Bytes[42]==2) && ((int)eth.Bytes[43] == 2)) spracuj_rip(eth, paket,rozhranie,odosielatel_address);
                 else
                 {
 
@@ -199,31 +199,48 @@ namespace router.Presenter
             if (zastav_vlakno) rozhranie.adapter.Close();
         }
 
-        public void spracuj_rip(EthernetPacket eth,Packet packet,Rozhranie rozhranie)
+        public void spracuj_rip(EthernetPacket eth,Packet packet,Rozhranie rozhranie, IPAddress oznamovatel)
         {
-            Rip rip_zaznam;
-           int dlzka= eth.Bytes.Length - 46;
+            Smerovaci_zaznam rip_zaznam;
+            int dlzka= eth.Bytes.Length - 46;
             int pocet = dlzka / 20;
             int cislo_rozhrania;
             bool pridaj_do_databazy = true;
+            IPAddress adresa_siete_rip;
+            IPAddress maska_rip;
+            bool pridaj_zaznam = true;
+            int slash_maska;
 
             if (rozhranie == rozhranie1) cislo_rozhrania = 1;
             else cislo_rozhrania = 2;
 
             while ((pocet--) > 0)
             {
-                // main_view.vypis("no aspon daco", 5);
-                rip_zaznam = new Rip("R", Praca_s_ip.adresa_siete(new IPAddress(eth.Bytes.Skip(50).Take(4).ToArray()), new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray())),
-                                         new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray()), 120, (int)eth.Bytes[65], new IPAddress(eth.Bytes.Skip(58).Take(4).ToArray()),
-                                         update_casovac, invalid_casovac, holddown_casovac, flush_casovac, cislo_rozhrania);
+                adresa_siete_rip = Praca_s_ip.adresa_siete(new IPAddress(eth.Bytes.Skip(50).Take(4).ToArray()), new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray()));
+                maska_rip = new IPAddress(eth.Bytes.Skip(54).Take(4).ToArray());
+                pridaj_zaznam = true;
+                slash_maska = Praca_s_ip.sprav_masku(maska_rip);
+
+                rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip,maska_rip, 120, (int)eth.Bytes[65], oznamovatel.ToString() ,
+                                                     cislo_rozhrania, invalid_casovac, holddown_casovac, flush_casovac);
 
                 foreach (var zaznam in smerovacia_tabulka.ToList())
                 {
-
-
+                    if (adresa_siete_rip.Equals(Praca_s_ip.adresa_siete(zaznam.cielova_siet,zaznam.maska)))
+                    {  
+                        if ((slash_maska > Praca_s_ip.sprav_masku(zaznam.maska))) pridaj_zaznam = true;  //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
+                        else pridaj_zaznam = false;
+                    }
                 }
+                if (pridaj_zaznam)
+                {
+                    smerovacia_tabulka.Add(rip_zaznam);
+                    main_view.vymaz_lb_smerovacia_tabulka();
+                    updatni_smerovaciu_tabulku();
+                }
+                pridaj_zaznam = true;
 
-                    foreach (var zaznam in rip_databaza.ToList())
+            /*    foreach (var zaznam in rip_databaza.ToList())
                 {
                     if (zaznam.cielova_siet == rip_zaznam.cielova_siet && zaznam.maska == rip_zaznam.maska && zaznam.metrika == rip_zaznam.metrika) pridaj_do_databazy = false; 
                 }
@@ -232,7 +249,7 @@ namespace router.Presenter
                     rip_databaza.Add(rip_zaznam);
                 }
 
-                if (pridaj_do_databazy == false) pridaj_do_databazy = true;
+                pridaj_do_databazy = true;*/
             }
                    
         }
@@ -258,11 +275,11 @@ namespace router.Presenter
 
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-                if (Praca_s_ip.zisti_podsiet(ciel_adres, IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)))
+                if (Praca_s_ip.zisti_podsiet(ciel_adres, zaznam.cielova_siet, zaznam.maska))
                 {
-                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)))
+                    if (najdlhsi_prefix < Praca_s_ip.sprav_masku(zaznam.maska))
                     {
-                        najdlhsi_prefix = Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska));
+                        najdlhsi_prefix = Praca_s_ip.sprav_masku(zaznam.maska);
                         smerovaci_zaznam = zaznam;
                     }
                 }
@@ -335,8 +352,8 @@ namespace router.Presenter
                 if (zaznam.typ == "D" && rozhranie == zaznam.exit_interface) smerovacia_tabulka.Remove(zaznam);
             }
 
-            string siet = Praca_s_ip.adresa_siete(IPAddress.Parse(main_view.ip_adresa), IPAddress.Parse(main_view.maska)).ToString();
-            Smerovaci_zaznam smerovaci_zaznam = new Smerovaci_zaznam("D", siet, main_view.maska, 1, 0, "X", -1, rozhranie);
+            IPAddress siet = Praca_s_ip.adresa_siete(IPAddress.Parse(main_view.ip_adresa), IPAddress.Parse(main_view.maska));
+            Smerovaci_zaznam smerovaci_zaznam = new Smerovaci_zaznam("D", siet, IPAddress.Parse(main_view.maska), 1, 0, "X", rozhranie);
             smerovacia_tabulka.Add(smerovaci_zaznam);
             updatni_smerovaciu_tabulku();
         }
@@ -345,20 +362,25 @@ namespace router.Presenter
         {
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-                if (zaznam.typ == "D") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)) + "       rozhranie: " + zaznam.exit_interface;
-                if (zaznam.typ == "S" && zaznam.exit_interface == -1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + "/" + Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop;
-                else if (zaznam.typ == "S" && zaznam.next_hop == "X") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + "/" + Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)) + "      [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.exit_interface;
-                else if (zaznam.typ == "S" && zaznam.next_hop != "X" && zaznam.exit_interface != -1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(IPAddress.Parse(zaznam.cielova_siet), IPAddress.Parse(zaznam.maska)) + "/" + Praca_s_ip.sprav_masku(IPAddress.Parse(zaznam.maska)) + "         [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + "     " + zaznam.exit_interface;
+                if (zaznam.typ == "R") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + ",  "+(invalid_casovac-zaznam.invalid)+",   " + zaznam.exit_interface;
+                if (zaznam.typ == "D") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + "       rozhranie: " + zaznam.exit_interface;
+                if (zaznam.typ == "S" && zaznam.exit_interface == -1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska) + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop;
+                else if (zaznam.typ == "S" && zaznam.next_hop == "X") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska) + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + "      [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.exit_interface;
+                else if (zaznam.typ == "S" && zaznam.next_hop != "X" && zaznam.exit_interface != -1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska) + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + "         [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + "     " + zaznam.exit_interface;
+               
             }
         }
 
         public void pridaj_staticku_cestu(int next_hop)
         {
             Smerovaci_zaznam smerovaci_zaznam = null;
+            IPAddress ip = IPAddress.Parse(main_view.staticke_ip);
+            IPAddress maska = IPAddress.Parse(main_view.staticke_maska);
+
             bool vloz = true;
-            if (next_hop == 1) smerovaci_zaznam = new Smerovaci_zaznam("S", main_view.staticke_ip, main_view.staticke_maska, 1, 0, main_view.staticke_next_hop, -1, -1);
-            if (next_hop == 2) smerovaci_zaznam = new Smerovaci_zaznam("S", main_view.staticke_ip, main_view.staticke_maska, 1, 0, "X", -1, int.Parse(main_view.staticke_rozhranie));
-            if (next_hop == 3) smerovaci_zaznam = new Smerovaci_zaznam("S", main_view.staticke_ip, main_view.staticke_maska, 1, 0, main_view.staticke_next_hop, -1, int.Parse(main_view.staticke_rozhranie));
+            if (next_hop == 1) smerovaci_zaznam = new Smerovaci_zaznam("S", ip, maska, 1, 0, main_view.staticke_next_hop, -1);
+            if (next_hop == 2) smerovaci_zaznam = new Smerovaci_zaznam("S", ip, maska, 1, 0, "X", int.Parse(main_view.staticke_rozhranie));
+            if (next_hop == 3) smerovaci_zaznam = new Smerovaci_zaznam("S", ip, maska, 1, 0, main_view.staticke_next_hop, int.Parse(main_view.staticke_rozhranie));
 
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {

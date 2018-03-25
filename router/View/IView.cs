@@ -23,5 +23,6 @@ namespace router.View
         string staticke_rozhranie { get; set; }
         void vymaz_arp();
         void vypis(string text,int cislo);
+        void vymaz_lb_smerovacia_tabulka();
     }
 }

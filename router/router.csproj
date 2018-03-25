@@ -53,7 +53,6 @@
   <ItemGroup>
     <Compile Include="Model\Arp.cs" />
     <Compile Include="Model\Praca_s_ip.cs" />
-    <Compile Include="Model\Rip.cs" />
     <Compile Include="Model\Rozhranie.cs" />
     <Compile Include="Model\Smerovaci_zaznam.cs" />
     <Compile Include="Presenter\MainController.cs" />

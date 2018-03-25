@@ -203,6 +203,10 @@ namespace router
             Console.WriteLine(text+"  "+cislo);
 
         }
+        public void vymaz_lb_smerovacia_tabulka()
+        {
+            lb_smerovacia_tabulka.Items.Clear();
+        }
 
     }
 }
