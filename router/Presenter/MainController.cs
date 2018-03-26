@@ -226,7 +226,7 @@ namespace router.Presenter
 
                 rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip,maska_rip, 120, (int)eth.Bytes[65+posunutie_metrika], oznamovatel.ToString() ,
                                                      cislo_rozhrania, invalid_casovac, holddown_casovac, flush_casovac);
-                if (rip_zaznam.metrika == 16) possibly_down = true;
+        //        if (rip_zaznam.metrika == 16) possibly_down = true;
 
                 foreach (var zaznam in smerovacia_tabulka.ToList())
                 {
@@ -235,16 +235,24 @@ namespace router.Presenter
                         if (rip_zaznam.metrika==16)
                         {
                             zaznam.metrika = 16;
-                            mam_16_v_tabulke = true;
+                 //           mam_16_v_tabulke = true;
                             smerovacia_tabulka.Remove(zaznam);
+                            pridaj_zaznam = false;
                             break;
                         }
-                        if ((slash_maska > Praca_s_ip.sprav_masku(zaznam.maska))) pridaj_zaznam = true;  //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
+                        if ((slash_maska > Praca_s_ip.sprav_masku(zaznam.maska))) //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
+                        {
+                            if (zaznam.typ=="R")
+                            {
+                                smerovacia_tabulka.Remove(zaznam);
+                            }
+                            pridaj_zaznam = true;
+                        }
                         else pridaj_zaznam = false;
                     }
                 }
 
-                if (possibly_down)
+        /*        if (possibly_down)
                 {
                     if (mam_16_v_tabulke)                       //zabezpeci ze sa mi neupdatuje ak ma metriku 16 
                     {
@@ -257,6 +265,31 @@ namespace router.Presenter
                         possibly_down = false;
                         pridaj_zaznam = false;
                     }
+                }*/
+
+                foreach (var zaznam in rip_databaza.ToList())
+                {
+                    if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && zaznam.next_hop.Equals(rip_zaznam.next_hop)) // && zaznam.metrika == rip_zaznam.metrika)
+                    {
+                        pridaj_do_databazy = false;
+                        if (rip_zaznam.metrika==16)
+                        {                        
+                            zaznam.metrika = 16;
+                            pridaj_zaznam = false;
+                          //  continue;
+                        }
+                        else if(rip_zaznam.metrika != zaznam.metrika)
+                        {
+                            if (zaznam.metrika != 16) pridaj_do_databazy = true;
+                            else
+                            {
+                                pridaj_zaznam = false;              // ak mi pride update na siet, ktoru mam v databaze s metrikou 16
+                                continue;
+                            }
+                        }
+
+                        if(zaznam.metrika != 16) zaznam.nastav_casovace(invalid_casovac, holddown_casovac, flush_casovac);
+                    }
                 }
 
                 if (pridaj_zaznam)
@@ -265,14 +298,6 @@ namespace router.Presenter
                 }
                 pridaj_zaznam = true;
 
-                foreach (var zaznam in rip_databaza.ToList())
-                {
-                    if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && zaznam.metrika == rip_zaznam.metrika)
-                    {
-                        pridaj_do_databazy = false;
-                        zaznam.nastav_casovace(invalid_casovac, holddown_casovac, flush_casovac);
-                    }
-                }
                 if (pridaj_do_databazy)
                 {
                     rip_databaza.Add(rip_zaznam);
@@ -459,6 +484,15 @@ namespace router.Presenter
             if (vloz) smerovacia_tabulka.Add(smerovaci_zaznam);
 
             updatni_smerovaciu_tabulku();
+
+        }
+
+        public void vypis_rip_databazku()
+        {
+            foreach (var zaznam in rip_databaza.ToList())
+            {
+                main_view.vypis(zaznam.cielova_siet.ToString()+"  ,  ",zaznam.metrika);
+            }
 
         }
 

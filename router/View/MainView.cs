@@ -114,6 +114,7 @@ namespace router
 
         private void button2_Click(object sender, EventArgs e)
         {
+            presenter.vypis_rip_databazku();
             try
             {
                 presenter.arp_casovac = Int32.Parse(txt_casovac.Text);
