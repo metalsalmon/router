@@ -106,6 +106,10 @@ namespace router
         {
             lb_arp_tabulka.Items.Clear();
             presenter.updatni_arp_tabulku();
+
+            presenter.zniz_casovace();
+            lb_smerovacia_tabulka.Items.Clear();
+            presenter.updatni_smerovaciu_tabulku();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -203,6 +207,13 @@ namespace router
             Console.WriteLine(text+"  "+cislo);
 
         }
+
+        private void lb_smerovacia_tabulka_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            /*presenter.zmaz_smerovaci_zaznam();
+            lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);*/
+        }
+
         public void vymaz_lb_smerovacia_tabulka()
         {
             lb_smerovacia_tabulka.Items.Clear();

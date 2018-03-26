@@ -216,6 +216,7 @@
             this.lb_smerovacia_tabulka.Name = "lb_smerovacia_tabulka";
             this.lb_smerovacia_tabulka.Size = new System.Drawing.Size(509, 340);
             this.lb_smerovacia_tabulka.TabIndex = 17;
+            this.lb_smerovacia_tabulka.SelectedIndexChanged += new System.EventHandler(this.lb_smerovacia_tabulka_SelectedIndexChanged);
             // 
             // btnpridaj
             // 

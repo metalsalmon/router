@@ -47,7 +47,7 @@ namespace router.Model
             this.flush = flush;
         }
 
-        public void nastav_casovace()
+        public void nastav_casovace(int invalid, int holddown, int flush)
         {
             this.invalid = invalid;
             this.holddown = holddown;
