@@ -308,7 +308,7 @@ namespace router.Presenter
             EthernetPacket eth = new EthernetPacket(rozhranie1.adapter.MacAddress, PhysicalAddress.Parse("01005E000009"), EthernetPacketType.IpV4);
             ip_paket= new IPv4Packet(IPAddress.Parse(rozhranie1.ip_adresa),IPAddress.Parse("224.0.0.9"));
             ip_paket.TimeToLive = 2;
-            udp_paket = new UdpPacket(520,520);
+            udp_paket = new UdpPacket(520,520); 
 
             udp_paket.PayloadData = rip_hlava;
 
