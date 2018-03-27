@@ -299,8 +299,11 @@ namespace router.Presenter
             IPv4Packet ip_paket;
             UdpPacket udp_paket;
             Byte[] ip;
+            Byte[] hlava = new byte[] { 0x00, 0x02, 0x00, 0x00};
             Byte[] rip_hlava = new byte[] { 0x02, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00};
             Byte[] next_hop = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+            Byte[] metrika = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+            bool prvy = true;
 
             EthernetPacket eth = new EthernetPacket(rozhranie1.adapter.MacAddress, PhysicalAddress.Parse("01005E000009"), EthernetPacketType.IpV4);
             ip_paket= new IPv4Packet(IPAddress.Parse(rozhranie1.ip_adresa),IPAddress.Parse("224.0.0.9"));
@@ -313,9 +316,13 @@ namespace router.Presenter
             {
                 if (zaznam.typ == "D" || zaznam.typ == "R")
                 {
+                    if(!prvy) rip_hlava = rip_hlava.Concat(hlava).ToArray();
+                    prvy = false;
                     rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(next_hop).ToArray();
+                    metrika[3] = (byte)(zaznam.metrika+1);                   
+                    rip_hlava = rip_hlava.Concat(metrika).ToArray();
                 }
 
             }
@@ -324,9 +331,14 @@ namespace router.Presenter
             {
                 if (zaznam.metrika == 16)
                 {
-                    rip_hlava=rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
+                    if (!prvy) rip_hlava = rip_hlava.Concat(hlava).ToArray();
+                    prvy = false;
+                    rip_hlava =rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(next_hop).ToArray();
+                    metrika[3] = (byte)zaznam.metrika;
+                    if (zaznam.metrika == 0) metrika[3] = 1;
+                     rip_hlava = rip_hlava.Concat(metrika).ToArray();
                 }
 
             }
@@ -430,7 +442,7 @@ namespace router.Presenter
             if (update_casovac == 0)
             {
                 posli_update();
-                update_casovac = 30;
+                update_casovac=30;
             }
             }
 
