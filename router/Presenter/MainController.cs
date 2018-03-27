@@ -47,8 +47,8 @@ namespace router.Presenter
             zmaz_arp_tabulku = false;
             update_casovac = 30;
             holddown_casovac = 180;
-            flush_casovac = 240;
-            invalid_casovac = 180;
+            flush_casovac = 55;
+            invalid_casovac = 45;
         }
 
         public void zobraz_sietove_adaptery()
@@ -212,7 +212,6 @@ namespace router.Presenter
             bool pridaj_zaznam = true;
             int slash_maska;
             int posunutie_ip = 0,posunutie_maska=0,posunutie_metrika=0;
-            bool possibly_down=false,mam_16_v_tabulke=false;
 
             if (rozhranie == rozhranie1) cislo_rozhrania = 1;
             else cislo_rozhrania = 2;
@@ -226,46 +225,32 @@ namespace router.Presenter
 
                 rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip,maska_rip, 120, (int)eth.Bytes[65+posunutie_metrika], oznamovatel.ToString() ,
                                                      cislo_rozhrania, invalid_casovac, holddown_casovac, flush_casovac);
-        //        if (rip_zaznam.metrika == 16) possibly_down = true;
 
                 foreach (var zaznam in smerovacia_tabulka.ToList())
                 {
                     if (adresa_siete_rip.Equals(Praca_s_ip.adresa_siete(zaznam.cielova_siet,zaznam.maska)))
                     {
-                        if (rip_zaznam.metrika==16)
+                        if ((slash_maska == Praca_s_ip.sprav_masku(zaznam.maska))) //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
                         {
-                            zaznam.metrika = 16;
-                 //           mam_16_v_tabulke = true;
-                            smerovacia_tabulka.Remove(zaznam);
-                            pridaj_zaznam = false;
-                            break;
-                        }
-                        if ((slash_maska > Praca_s_ip.sprav_masku(zaznam.maska))) //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
-                        {
-                            if (zaznam.typ=="R")
+                            if (rip_zaznam.metrika == 16)
+                            {
+                                zaznam.metrika = 16;
+                                smerovacia_tabulka.Remove(zaznam);
+                                pridaj_zaznam = false;
+                                break;
+                            }
+                            if (rip_zaznam.metrika == zaznam.metrika)
+                            {
+                                pridaj_zaznam = false;
+                            }
+                            else if (rip_zaznam.metrika < zaznam.metrika)
                             {
                                 smerovacia_tabulka.Remove(zaznam);
                             }
-                            pridaj_zaznam = true;
+                            
                         }
-                        else pridaj_zaznam = false;
                     }
                 }
-
-        /*        if (possibly_down)
-                {
-                    if (mam_16_v_tabulke)                       //zabezpeci ze sa mi neupdatuje ak ma metriku 16 
-                    {
-                        possibly_down= mam_16_v_tabulke = false;
-                        pridaj_zaznam = true;
-                        continue;
-                    }
-                    else
-                    {
-                        possibly_down = false;
-                        pridaj_zaznam = false;
-                    }
-                }*/
 
                 foreach (var zaznam in rip_databaza.ToList())
                 {
@@ -307,6 +292,52 @@ namespace router.Presenter
                 posunutie_ip = posunutie_maska = posunutie_metrika = posunutie_ip + 20;
             }
                    
+        }
+
+        public void posli_update()
+        {
+            IPv4Packet ip_paket;
+            UdpPacket udp_paket;
+            Byte[] ip;
+            Byte[] rip_hlava = new byte[] { 0x02, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00};
+            Byte[] next_hop = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+
+            EthernetPacket eth = new EthernetPacket(rozhranie1.adapter.MacAddress, PhysicalAddress.Parse("01005E000009"), EthernetPacketType.IpV4);
+            ip_paket= new IPv4Packet(IPAddress.Parse(rozhranie1.ip_adresa),IPAddress.Parse("224.0.0.9"));
+            ip_paket.TimeToLive = 2;
+            udp_paket = new UdpPacket(520,520);
+
+            udp_paket.PayloadData = rip_hlava;
+
+            foreach (var zaznam in smerovacia_tabulka.ToList())
+            {
+                if (zaznam.typ == "D" || zaznam.typ == "R")
+                {
+                    rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
+                    rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
+                    rip_hlava = rip_hlava.Concat(next_hop).ToArray();
+                }
+
+            }
+
+            foreach (var zaznam in rip_databaza.ToList())
+            {
+                if (zaznam.metrika == 16)
+                {
+                    rip_hlava=rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
+                    rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
+                    rip_hlava = rip_hlava.Concat(next_hop).ToArray();
+                }
+
+            }
+                 udp_paket.PayloadData = rip_hlava;
+
+            ip_paket.PayloadPacket = udp_paket;
+            eth.PayloadPacket = ip_paket;
+
+            rozhranie2.adapter.SendPacket(eth);
+
+            
         }
 
         public Smerovaci_zaznam rekurzivne_prehladanie(Smerovaci_zaznam smerovaci_zaznam ,ref string via)
@@ -395,25 +426,12 @@ namespace router.Presenter
                 }
                 else zaznam.invalid--;
             }
-
-         /*   foreach (var zaznam in smerovacia_tabulka.ToList())
+            update_casovac--;
+            if (update_casovac == 0)
             {
-               if(zaznam.typ=="R")
-                {
-                    zaznam.flush--;
-                    if (zaznam.flush == 0)
-                    {
-                        rip_databaza.Remove(zaznam);
-                        break;
-                    }
-                    if (zaznam.invalid == 0)
-                    {
-                        zaznam.holddown--;
-                    }
-                    else zaznam.invalid--;
-                }
-            }*/
-
+                posli_update();
+                update_casovac = 30;
+            }
             }
 
         public void updatni_arp_tabulku()
@@ -493,7 +511,6 @@ namespace router.Presenter
             {
                 main_view.vypis(zaznam.cielova_siet.ToString()+"  ,  ",zaznam.metrika);
             }
-
         }
 
         public void arp_request(Rozhranie rozhranie, IPAddress hladana_ip)
