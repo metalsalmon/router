@@ -28,6 +28,7 @@ namespace router.Presenter
         public bool zmaz_arp_tabulku { get; set; }
         public List<Smerovaci_zaznam> smerovacia_tabulka { get; set; }
         public List<Smerovaci_zaznam> rip_databaza { get; set; }
+        public int update_casovac_hodnota { get; set; }
         public int update_casovac { get; set; }
         public int holddown_casovac { get; set; }
         public int flush_casovac { get; set; }
@@ -47,10 +48,12 @@ namespace router.Presenter
             zastav_vlakno = false;
             arp_casovac = 50;
             zmaz_arp_tabulku = false;
-            update_casovac = 30;
+
+            update_casovac_hodnota = 30;
+            update_casovac = 0;
             holddown_casovac = 180;
-            flush_casovac = 55;
-            invalid_casovac = 45;
+            flush_casovac = 240;
+            invalid_casovac = 180;
         }
 
         public void zobraz_sietove_adaptery()
@@ -232,7 +235,7 @@ namespace router.Presenter
                     slash_maska = Praca_s_ip.sprav_masku(maska_rip);
 
                     rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip, maska_rip, 120, (int)eth.Bytes[65 + posunutie_metrika], oznamovatel.ToString(),
-                                                         cislo_rozhrania, invalid_casovac, holddown_casovac, flush_casovac);
+                                                         cislo_rozhrania, 0, 0, 0);
                     
                     foreach (var zaznam in smerovacia_tabulka.ToList())
                     {
@@ -245,7 +248,8 @@ namespace router.Presenter
                                     if (zaznam.typ == "R")
                                     {
                                         zaznam.metrika = 16;
-                                        if (najdi_najlepsiu_v_databaze(zaznam.cielova_siet) != null) smerovacia_tabulka.Add(najdi_najlepsiu_v_databaze(zaznam.cielova_siet));
+                                        if (najdi_najlepsiu_v_databaze(zaznam.cielova_siet,zaznam.maska) != null) smerovacia_tabulka.Add(najdi_najlepsiu_v_databaze(zaznam.cielova_siet,zaznam.maska));
+                                            //trigger_update(cislo_rozhrania,zaznam);
                                         smerovacia_tabulka.Remove(zaznam);
                                         pridaj_zaznam = false;
                                         break;
@@ -259,42 +263,50 @@ namespace router.Presenter
                                 if (rip_zaznam.metrika >= zaznam.metrika)
                                 {
                                     pridaj_zaznam = false;
+                                    break;
                                 }
                                 else
                                 {
                                     smerovacia_tabulka.Remove(zaznam);
+                                        break;
                                 }
 
                             }
                         }
                     }
+                     //   bool pridavaj = true;
 
                     foreach (var zaznam in rip_databaza.ToList())
                     {
-                        if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && zaznam.next_hop.Equals(rip_zaznam.next_hop)) // && zaznam.metrika == rip_zaznam.metrika)
+                        if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && (zaznam.next_hop==rip_zaznam.next_hop)) // && zaznam.metrika == rip_zaznam.metrika)
                         {
                             pridaj_do_databazy = false;
                             if (rip_zaznam.metrika == 16)
                             {
                                 zaznam.metrika = 16;
                                 pridaj_zaznam = false;
-                                //  continue;
+                                continue;
                             }
                             else if (rip_zaznam.metrika != zaznam.metrika)
                             {
-                                if (zaznam.metrika != 16) pridaj_do_databazy = true;
-                                else
-                                {
-                                    pridaj_zaznam = false;              // ak mi pride update na siet, ktoru mam v databaze s metrikou 16
-                                    continue;
-                                }
+                                    zaznam.nastav_casovace(0, 0, 0);
+                                    pridaj_do_databazy = true;
                             }
-
-                            if (zaznam.metrika != 16) zaznam.nastav_casovace(invalid_casovac, holddown_casovac, flush_casovac);
+                            else if (rip_zaznam.metrika == zaznam.metrika)
+                                {
+                                    zaznam.nastav_casovace(0, 0, 0);
+                                    pridaj_do_databazy = false;
+                                    break;
+                                }
+                          
                         }
+
+                         /*   if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && rip_zaznam.exit_interface != zaznam.exit_interface)
+                                pridaj_do_databazy = false; */
+
                     }
 
-                    if (pridaj_zaznam)
+                    if (pridaj_zaznam && rip_zaznam.metrika!=16)
                     {
                         smerovacia_tabulka.Add(rip_zaznam);
                     }
@@ -315,14 +327,14 @@ namespace router.Presenter
                    
         }
 
-        public Smerovaci_zaznam najdi_najlepsiu_v_databaze(IPAddress adresa_siete)
+        public Smerovaci_zaznam najdi_najlepsiu_v_databaze(IPAddress adresa_siete,IPAddress maska)
         {
             Smerovaci_zaznam smerovaci_zaznam=null;
             int najlepsia = 99;
 
             foreach (var zaznam in rip_databaza.ToList())
             {
-                if (zaznam.cielova_siet.Equals(adresa_siete))
+                if (zaznam.cielova_siet.Equals(adresa_siete) && zaznam.maska.Equals(maska))
                 {
                     if (zaznam.metrika < najlepsia)
                     {
@@ -374,6 +386,42 @@ namespace router.Presenter
 
 
         }
+        public void trigger_update(int cislo_rozhrania,Smerovaci_zaznam zaznam)
+        {
+            IPv4Packet ip_paket;
+            UdpPacket udp_paket;
+            Byte[] ip;
+            Byte[] hlava = new byte[] { 0x00, 0x02, 0x00, 0x00 };
+            Byte[] rip_hlava = new byte[] { 0x02, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00 };
+            Byte[] next_hop = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+            Byte[] metrika = new byte[] { 0x00, 0x00, 0x00, 0x10 };
+            Rozhranie rozhranie;
+
+            if (cislo_rozhrania == 1) rozhranie = rozhranie2;
+            else rozhranie = rozhranie1;
+
+            EthernetPacket eth = new EthernetPacket(rozhranie.adapter.MacAddress, PhysicalAddress.Parse("01005E000009"), EthernetPacketType.IpV4);
+            ip_paket = new IPv4Packet(IPAddress.Parse(rozhranie.ip_adresa), IPAddress.Parse("224.0.0.9"));
+            ip_paket.TimeToLive = 2;
+            udp_paket = new UdpPacket(520, 520);
+
+            rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
+            rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
+            rip_hlava = rip_hlava.Concat(next_hop).ToArray();
+           // metrika[3] = (byte)(zaznam.metrika + 1);
+            rip_hlava = rip_hlava.Concat(metrika).ToArray();
+
+            udp_paket.PayloadData = rip_hlava;
+            // udp_paket.UpdateUDPChecksum();
+
+            ip_paket.PayloadPacket = udp_paket;
+            ip_paket.UpdateIPChecksum();
+
+            eth.PayloadPacket = ip_paket;
+
+            rozhranie.adapter.SendPacket(eth);
+
+        }
 
         public void posli_update(Rozhranie rozhranie, int cislo_rozhrania,IPAddress cielova_ip, PhysicalAddress cielova_mac)
         {
@@ -386,10 +434,10 @@ namespace router.Presenter
             Byte[] metrika = new byte[] { 0x00, 0x00, 0x00, 0x00 };
             bool prvy = true;
 
-             EthernetPacket eth = new EthernetPacket(rozhranie.adapter.MacAddress, cielova_mac, EthernetPacketType.IpV4);
+            EthernetPacket eth = new EthernetPacket(rozhranie.adapter.MacAddress, cielova_mac, EthernetPacketType.IpV4);
             ip_paket= new IPv4Packet(IPAddress.Parse(rozhranie.ip_adresa),cielova_ip);
 
-            if(cielova_mac.Equals("01005E000009")) ip_paket.TimeToLive = 2;
+            if(cielova_mac.ToString().Equals("01005E000009")) ip_paket.TimeToLive = 2;
             else ip_paket.TimeToLive = 255;
 
             udp_paket = new UdpPacket(520,520); 
@@ -403,10 +451,11 @@ namespace router.Presenter
                     rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(next_hop).ToArray();
-                    metrika[3] = (byte)(zaznam.metrika+1);                   
+                    if(zaznam.metrika!=16)metrika[3] = (byte)(zaznam.metrika+1);
+                    else metrika[3] = (byte)(zaznam.metrika);
+                    metrika[3] = (byte)(zaznam.metrika + 1);
                     rip_hlava = rip_hlava.Concat(metrika).ToArray();
                 }
-
             }
 
             foreach (var zaznam in rip_databaza.ToList())
@@ -503,36 +552,40 @@ namespace router.Presenter
 
         public void zmaz_smerovaci_zaznam()
         {
-            if(smerovacia_tabulka.ElementAt(main_view.lb_smerovaci_zaznam_index).typ!="R")
+            Smerovaci_zaznam smerovaci_zaznam = najdi_najlepsiu_v_databaze(smerovacia_tabulka.ElementAt(main_view.lb_smerovaci_zaznam_index).cielova_siet, smerovacia_tabulka.ElementAt(main_view.lb_smerovaci_zaznam_index).maska);
+
+            if (smerovaci_zaznam != null) smerovacia_tabulka.Add(smerovaci_zaznam);
+
+            if (smerovacia_tabulka.ElementAt(main_view.lb_smerovaci_zaznam_index).typ!="R")
             smerovacia_tabulka.RemoveAt(main_view.lb_smerovaci_zaznam_index);
         }
 
-        public void zniz_casovace()
+        public void updatni_casovace()
         {
             if (povolene_rip1==true || povolene_rip2==true)
             {
                 foreach (var zaznam in rip_databaza.ToList())
                 {
-                    zaznam.flush--;
-                    if (zaznam.flush == 0)
+                    zaznam.flush++;
+                    if (zaznam.flush == flush_casovac)
                     {
                         rip_databaza.Remove(zaznam);
                         smerovacia_tabulka.Remove(zaznam);
                         break;
                     }
-                    if (zaznam.invalid == 0)
+                    if (zaznam.invalid == invalid_casovac)
                     {
                         zaznam.metrika = 16;
-                        zaznam.holddown--;
+                        zaznam.holddown++;
                     }
-                    else zaznam.invalid--;
+                    else zaznam.invalid++;
                 }
-                update_casovac--;
-                if (update_casovac == 0)
+                update_casovac++;
+                if (update_casovac == update_casovac_hodnota)
                 {
                     if(povolene_rip1)posli_update(rozhranie1, 1, IPAddress.Parse("224.0.0.9"), PhysicalAddress.Parse("01005E000009"));
                     if(povolene_rip2)posli_update(rozhranie2, 2, IPAddress.Parse("224.0.0.9"), PhysicalAddress.Parse("01005E000009"));
-                    update_casovac = 30;
+                    update_casovac = 0;
                 }
             }
         }
@@ -577,7 +630,7 @@ namespace router.Presenter
         {
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-                if (zaznam.typ == "R") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + ",  "+(invalid_casovac-zaznam.invalid)+",   " + zaznam.exit_interface;
+                if (zaznam.typ == "R") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop + ",  "+(zaznam.invalid)+",   " + zaznam.exit_interface;
                 if (zaznam.typ == "D") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + zaznam.cielova_siet + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + "       rozhranie: " + zaznam.exit_interface;
                 if (zaznam.typ == "S" && zaznam.exit_interface == -1) main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska) + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + " [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.next_hop;
                 else if (zaznam.typ == "S" && zaznam.next_hop == "X") main_view.lb_smerovacia_tabulka = zaznam.typ + "         " + Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska) + "/" + Praca_s_ip.sprav_masku(zaznam.maska) + "      [" + zaznam.ad + "/" + zaznam.metrika + "]       cez: " + zaznam.exit_interface;
@@ -600,8 +653,10 @@ namespace router.Presenter
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
                 if (zaznam.Equals(smerovaci_zaznam)) vloz = false;
+                if (Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska).Equals(Praca_s_ip.adresa_siete(smerovaci_zaznam.cielova_siet, smerovaci_zaznam.maska)) &&
+                    zaznam.maska.Equals(smerovaci_zaznam.maska) && zaznam.metrika > smerovaci_zaznam.metrika) smerovacia_tabulka.Remove(zaznam);
             }
-
+           
             if (vloz) smerovacia_tabulka.Add(smerovaci_zaznam);
 
             updatni_smerovaciu_tabulku();
@@ -612,7 +667,7 @@ namespace router.Presenter
         {
             foreach (var zaznam in rip_databaza.ToList())
             {
-                main_view.vypis(zaznam.cielova_siet.ToString()+"  ,  ",zaznam.metrika);
+                main_view.vypis(zaznam.cielova_siet.ToString()+"  ,  "+zaznam.next_hop.ToString()+"   ",zaznam.metrika);
             }
         }
 
@@ -622,8 +677,12 @@ namespace router.Presenter
             {
                 if (zaznam.typ == "R" && zaznam.exit_interface == cislo_rozhrania) smerovacia_tabulka.Remove(zaznam);
             }
-                rip_databaza = null;
-                rip_databaza = new List<Smerovaci_zaznam>();
+
+            foreach (var zaznam in rip_databaza.ToList())
+            {
+                if (zaznam.typ == "R" && zaznam.exit_interface == cislo_rozhrania) rip_databaza.Remove(zaznam);
+            }
+
         }
 
         public void arp_request(Rozhranie rozhranie, IPAddress hladana_ip)

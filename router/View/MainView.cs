@@ -101,7 +101,7 @@ namespace router
                 lb_arp_tabulka.Items.Clear();
                 presenter.updatni_arp_tabulku();
 
-                presenter.zniz_casovace();
+                presenter.updatni_casovace();
                 lb_smerovacia_tabulka.Items.Clear();
                 presenter.updatni_smerovaciu_tabulku();
             }
@@ -207,8 +207,14 @@ namespace router
 
         private void lb_smerovacia_tabulka_SelectedIndexChanged(object sender, EventArgs e)
         {
-            presenter.zmaz_smerovaci_zaznam();
-            lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);
+            try
+            {
+                presenter.zmaz_smerovaci_zaznam();
+                lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);
+            }catch(Exception ee)
+            {
+
+            }
         }
 
         private void rip_rozhranie_1_CheckedChanged(object sender, EventArgs e)
@@ -240,6 +246,14 @@ namespace router
             }
 
             }
+
+        private void btn_nastav_casovace_Click(object sender, EventArgs e)
+        {
+            if (txt_update.Text != "") presenter.update_casovac = Int32.Parse(txt_update.Text);
+            if (txt_invalid.Text != "") presenter.invalid_casovac = Int32.Parse(txt_invalid.Text);
+            if (txt_holddown.Text != "") presenter.holddown_casovac = Int32.Parse(txt_holddown.Text);
+            if (txt_flush.Text != "") presenter.flush_casovac = Int32.Parse(txt_flush.Text);
+        }
 
         public void vymaz_lb_smerovacia_tabulka()
         {

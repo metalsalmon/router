@@ -56,6 +56,15 @@
             this.btn_zmaz_cestu = new System.Windows.Forms.Button();
             this.rip_rozhranie_2 = new System.Windows.Forms.CheckBox();
             this.rip_rozhranie_1 = new System.Windows.Forms.CheckBox();
+            this.btn_nastav_casovace = new System.Windows.Forms.Button();
+            this.invalid = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txt_invalid = new System.Windows.Forms.TextBox();
+            this.txt_holddown = new System.Windows.Forms.TextBox();
+            this.txt_flush = new System.Windows.Forms.TextBox();
+            this.txt_update = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -307,11 +316,94 @@
             this.rip_rozhranie_1.UseVisualStyleBackColor = true;
             this.rip_rozhranie_1.CheckedChanged += new System.EventHandler(this.rip_rozhranie_1_CheckedChanged);
             // 
+            // btn_nastav_casovace
+            // 
+            this.btn_nastav_casovace.Location = new System.Drawing.Point(412, 442);
+            this.btn_nastav_casovace.Name = "btn_nastav_casovace";
+            this.btn_nastav_casovace.Size = new System.Drawing.Size(122, 23);
+            this.btn_nastav_casovace.TabIndex = 30;
+            this.btn_nastav_casovace.Text = "nastav casovace";
+            this.btn_nastav_casovace.UseVisualStyleBackColor = true;
+            this.btn_nastav_casovace.Click += new System.EventHandler(this.btn_nastav_casovace_Click);
+            // 
+            // invalid
+            // 
+            this.invalid.AutoSize = true;
+            this.invalid.Location = new System.Drawing.Point(49, 406);
+            this.invalid.Name = "invalid";
+            this.invalid.Size = new System.Drawing.Size(48, 17);
+            this.invalid.TabIndex = 31;
+            this.invalid.Text = "invalid";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(113, 406);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(68, 17);
+            this.label3.TabIndex = 32;
+            this.label3.Text = "holddown";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(199, 406);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(38, 17);
+            this.label4.TabIndex = 33;
+            this.label4.Text = "flush";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(260, 406);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(52, 17);
+            this.label5.TabIndex = 34;
+            this.label5.Text = "update";
+            // 
+            // txt_invalid
+            // 
+            this.txt_invalid.Location = new System.Drawing.Point(52, 436);
+            this.txt_invalid.Name = "txt_invalid";
+            this.txt_invalid.Size = new System.Drawing.Size(45, 22);
+            this.txt_invalid.TabIndex = 35;
+            // 
+            // txt_holddown
+            // 
+            this.txt_holddown.Location = new System.Drawing.Point(116, 436);
+            this.txt_holddown.Name = "txt_holddown";
+            this.txt_holddown.Size = new System.Drawing.Size(45, 22);
+            this.txt_holddown.TabIndex = 36;
+            // 
+            // txt_flush
+            // 
+            this.txt_flush.Location = new System.Drawing.Point(192, 436);
+            this.txt_flush.Name = "txt_flush";
+            this.txt_flush.Size = new System.Drawing.Size(45, 22);
+            this.txt_flush.TabIndex = 37;
+            // 
+            // txt_update
+            // 
+            this.txt_update.Location = new System.Drawing.Point(263, 436);
+            this.txt_update.Name = "txt_update";
+            this.txt_update.Size = new System.Drawing.Size(45, 22);
+            this.txt_update.TabIndex = 38;
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 560);
+            this.Controls.Add(this.txt_update);
+            this.Controls.Add(this.txt_flush);
+            this.Controls.Add(this.txt_holddown);
+            this.Controls.Add(this.txt_invalid);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.invalid);
+            this.Controls.Add(this.btn_nastav_casovace);
             this.Controls.Add(this.rip_rozhranie_1);
             this.Controls.Add(this.rip_rozhranie_2);
             this.Controls.Add(this.btn_zmaz_cestu);
@@ -375,6 +467,15 @@
         private System.Windows.Forms.Button btn_zmaz_cestu;
         private System.Windows.Forms.CheckBox rip_rozhranie_2;
         private System.Windows.Forms.CheckBox rip_rozhranie_1;
+        private System.Windows.Forms.Button btn_nastav_casovace;
+        private System.Windows.Forms.Label invalid;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox txt_invalid;
+        private System.Windows.Forms.TextBox txt_holddown;
+        private System.Windows.Forms.TextBox txt_flush;
+        private System.Windows.Forms.TextBox txt_update;
     }
 }
 
