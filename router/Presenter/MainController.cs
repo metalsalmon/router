@@ -289,8 +289,9 @@ namespace router.Presenter
                             }
                             else if (rip_zaznam.metrika != zaznam.metrika)
                             {
+                                    zaznam.metrika = rip_zaznam.metrika;
                                     zaznam.nastav_casovace(0, 0, 0);
-                                    pridaj_do_databazy = true;
+                                    //pridaj_do_databazy = true;
                             }
                             else if (rip_zaznam.metrika == zaznam.metrika)
                                 {
