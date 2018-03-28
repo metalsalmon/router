@@ -32,8 +32,6 @@
             this.btn_nastav = new System.Windows.Forms.Button();
             this.txt_ip_adresa = new System.Windows.Forms.TextBox();
             this.txt_maska = new System.Windows.Forms.TextBox();
-            this.btn_arp = new System.Windows.Forms.Button();
-            this.txt_arp = new System.Windows.Forms.TextBox();
             this.lb_arp_tabulka = new System.Windows.Forms.ListBox();
             this.btn_zmaz_arp = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -56,6 +54,8 @@
             this.lbl_rozhranie = new System.Windows.Forms.Label();
             this.txt_rozhranie_staticke = new System.Windows.Forms.TextBox();
             this.btn_zmaz_cestu = new System.Windows.Forms.Button();
+            this.rip_rozhranie_2 = new System.Windows.Forms.CheckBox();
+            this.rip_rozhranie_1 = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,23 +82,6 @@
             this.txt_maska.Name = "txt_maska";
             this.txt_maska.Size = new System.Drawing.Size(111, 22);
             this.txt_maska.TabIndex = 3;
-            // 
-            // btn_arp
-            // 
-            this.btn_arp.Location = new System.Drawing.Point(159, 227);
-            this.btn_arp.Name = "btn_arp";
-            this.btn_arp.Size = new System.Drawing.Size(75, 23);
-            this.btn_arp.TabIndex = 4;
-            this.btn_arp.Text = "arp";
-            this.btn_arp.UseVisualStyleBackColor = true;
-            this.btn_arp.Click += new System.EventHandler(this.btn_arp_Click);
-            // 
-            // txt_arp
-            // 
-            this.txt_arp.Location = new System.Drawing.Point(44, 228);
-            this.txt_arp.Name = "txt_arp";
-            this.txt_arp.Size = new System.Drawing.Size(100, 22);
-            this.txt_arp.TabIndex = 5;
             // 
             // lb_arp_tabulka
             // 
@@ -127,7 +110,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(159, 281);
+            this.button2.Location = new System.Drawing.Point(162, 227);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 9;
@@ -137,7 +120,7 @@
             // 
             // txt_casovac
             // 
-            this.txt_casovac.Location = new System.Drawing.Point(44, 281);
+            this.txt_casovac.Location = new System.Drawing.Point(44, 228);
             this.txt_casovac.Name = "txt_casovac";
             this.txt_casovac.Size = new System.Drawing.Size(100, 22);
             this.txt_casovac.TabIndex = 10;
@@ -302,11 +285,35 @@
             this.btn_zmaz_cestu.UseVisualStyleBackColor = true;
             this.btn_zmaz_cestu.Click += new System.EventHandler(this.btn_zmaz_cestu_Click);
             // 
+            // rip_rozhranie_2
+            // 
+            this.rip_rozhranie_2.AutoSize = true;
+            this.rip_rozhranie_2.Location = new System.Drawing.Point(427, 121);
+            this.rip_rozhranie_2.Name = "rip_rozhranie_2";
+            this.rip_rozhranie_2.Size = new System.Drawing.Size(122, 21);
+            this.rip_rozhranie_2.TabIndex = 28;
+            this.rip_rozhranie_2.Text = "rip rozhranie 2";
+            this.rip_rozhranie_2.UseVisualStyleBackColor = true;
+            this.rip_rozhranie_2.CheckedChanged += new System.EventHandler(this.rip_rozhranie_2_CheckedChanged);
+            // 
+            // rip_rozhranie_1
+            // 
+            this.rip_rozhranie_1.AutoSize = true;
+            this.rip_rozhranie_1.Location = new System.Drawing.Point(427, 92);
+            this.rip_rozhranie_1.Name = "rip_rozhranie_1";
+            this.rip_rozhranie_1.Size = new System.Drawing.Size(122, 21);
+            this.rip_rozhranie_1.TabIndex = 29;
+            this.rip_rozhranie_1.Text = "rip rozhranie 1";
+            this.rip_rozhranie_1.UseVisualStyleBackColor = true;
+            this.rip_rozhranie_1.CheckedChanged += new System.EventHandler(this.rip_rozhranie_1_CheckedChanged);
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 560);
+            this.Controls.Add(this.rip_rozhranie_1);
+            this.Controls.Add(this.rip_rozhranie_2);
             this.Controls.Add(this.btn_zmaz_cestu);
             this.Controls.Add(this.txt_rozhranie_staticke);
             this.Controls.Add(this.lbl_rozhranie);
@@ -326,8 +333,6 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.btn_zmaz_arp);
             this.Controls.Add(this.lb_arp_tabulka);
-            this.Controls.Add(this.txt_arp);
-            this.Controls.Add(this.btn_arp);
             this.Controls.Add(this.txt_maska);
             this.Controls.Add(this.txt_ip_adresa);
             this.Controls.Add(this.btn_nastav);
@@ -346,8 +351,6 @@
         private System.Windows.Forms.Button btn_nastav;
         private System.Windows.Forms.TextBox txt_ip_adresa;
         private System.Windows.Forms.TextBox txt_maska;
-        private System.Windows.Forms.Button btn_arp;
-        private System.Windows.Forms.TextBox txt_arp;
         private System.Windows.Forms.ListBox lb_arp_tabulka;
         private System.Windows.Forms.Button btn_zmaz_arp;
         private System.Windows.Forms.Timer timer1;
@@ -370,6 +373,8 @@
         private System.Windows.Forms.Label lbl_rozhranie;
         private System.Windows.Forms.TextBox txt_rozhranie_staticke;
         private System.Windows.Forms.Button btn_zmaz_cestu;
+        private System.Windows.Forms.CheckBox rip_rozhranie_2;
+        private System.Windows.Forms.CheckBox rip_rozhranie_1;
     }
 }
 

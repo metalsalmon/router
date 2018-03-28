@@ -23,7 +23,6 @@ namespace router
         public string maska { get => txt_maska.Text; set => txt_maska.Text = value; }
         public string adaptery { get => cb_adaptery.SelectedItem.ToString(); set => cb_adaptery.Items.Add(value); }
         public int adaptery_index { get => cb_adaptery.SelectedIndex; set => throw new NotImplementedException(); }
-        public string arp { get => txt_arp.Text.ToString(); set => txt_arp.Text = value; }
         public string lb_arp_zaznam { get => lb_arp_tabulka.SelectedItem.ToString(); set => lb_arp_tabulka.Items.Add(value); }
         public int lb_smerovaci_zaznam_index { get => lb_smerovacia_tabulka.SelectedIndex; set => throw new NotImplementedException(); }
         public int casovac { get => Int32.Parse(txt_casovac.Text); set => txt_casovac.Text = value.ToString(); }
@@ -96,24 +95,21 @@ namespace router
             lb_arp_tabulka.Items.Clear();
         }
 
-        private void btn_arp_Click(object sender, EventArgs e)
-        {
-              presenter.arp_request(presenter.rozhranie2, IPAddress.Parse(arp));
-
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
-            lb_arp_tabulka.Items.Clear();
-            presenter.updatni_arp_tabulku();
+            if(presenter.rozhranie1!=null && presenter.rozhranie2!=null){
+                lb_arp_tabulka.Items.Clear();
+                presenter.updatni_arp_tabulku();
 
-            presenter.zniz_casovace();
-            lb_smerovacia_tabulka.Items.Clear();
-            presenter.updatni_smerovaciu_tabulku();
+                presenter.zniz_casovace();
+                lb_smerovacia_tabulka.Items.Clear();
+                presenter.updatni_smerovaciu_tabulku();
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+
             presenter.vypis_rip_databazku();
             try
             {
@@ -211,9 +207,39 @@ namespace router
 
         private void lb_smerovacia_tabulka_SelectedIndexChanged(object sender, EventArgs e)
         {
-            /*presenter.zmaz_smerovaci_zaznam();
-            lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);*/
+            presenter.zmaz_smerovaci_zaznam();
+            lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);
         }
+
+        private void rip_rozhranie_1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rip_rozhranie_1.Checked)
+            {
+                presenter.povolene_rip1 = true;
+                presenter.rip_request(1);
+            }
+            else
+            {
+                presenter.povolene_rip1 = false;
+                presenter.vymaz_rip_zaznamy(1);
+            }
+
+        }
+
+        private void rip_rozhranie_2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rip_rozhranie_2.Checked)
+            {
+                presenter.povolene_rip2 = true;
+                presenter.rip_request(2);
+            }
+            else
+            {
+                presenter.povolene_rip2 = false;
+                presenter.vymaz_rip_zaznamy(2);
+            }
+
+            }
 
         public void vymaz_lb_smerovacia_tabulka()
         {
