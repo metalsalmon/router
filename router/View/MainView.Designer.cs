@@ -65,6 +65,9 @@
             this.txt_holddown = new System.Windows.Forms.TextBox();
             this.txt_flush = new System.Windows.Forms.TextBox();
             this.txt_update = new System.Windows.Forms.TextBox();
+            this.txt_ping = new System.Windows.Forms.TextBox();
+            this.btn_ping = new System.Windows.Forms.Button();
+            this.lbl_ping = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -390,11 +393,39 @@
             this.txt_update.Size = new System.Drawing.Size(45, 22);
             this.txt_update.TabIndex = 38;
             // 
+            // txt_ping
+            // 
+            this.txt_ping.Location = new System.Drawing.Point(44, 277);
+            this.txt_ping.Name = "txt_ping";
+            this.txt_ping.Size = new System.Drawing.Size(100, 22);
+            this.txt_ping.TabIndex = 39;
+            // 
+            // btn_ping
+            // 
+            this.btn_ping.Location = new System.Drawing.Point(162, 277);
+            this.btn_ping.Name = "btn_ping";
+            this.btn_ping.Size = new System.Drawing.Size(75, 27);
+            this.btn_ping.TabIndex = 40;
+            this.btn_ping.Text = "ping";
+            this.btn_ping.UseVisualStyleBackColor = true;
+            this.btn_ping.Click += new System.EventHandler(this.btn_ping_Click);
+            // 
+            // lbl_ping
+            // 
+            this.lbl_ping.AutoSize = true;
+            this.lbl_ping.Location = new System.Drawing.Point(44, 334);
+            this.lbl_ping.Name = "lbl_ping";
+            this.lbl_ping.Size = new System.Drawing.Size(0, 17);
+            this.lbl_ping.TabIndex = 41;
+            // 
             // MainView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1187, 560);
+            this.Controls.Add(this.lbl_ping);
+            this.Controls.Add(this.btn_ping);
+            this.Controls.Add(this.txt_ping);
             this.Controls.Add(this.txt_update);
             this.Controls.Add(this.txt_flush);
             this.Controls.Add(this.txt_holddown);
@@ -476,6 +507,9 @@
         private System.Windows.Forms.TextBox txt_holddown;
         private System.Windows.Forms.TextBox txt_flush;
         private System.Windows.Forms.TextBox txt_update;
+        private System.Windows.Forms.TextBox txt_ping;
+        private System.Windows.Forms.Button btn_ping;
+        private System.Windows.Forms.Label lbl_ping;
     }
 }
 

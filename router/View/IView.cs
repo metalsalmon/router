@@ -16,6 +16,7 @@ namespace router.View
         string staticke_maska { get; set; }
         string staticke_next_hop { get; set; }
         string staticke_rozhranie { get; set; }
+        string lbl_ping { get; set; }
         void vymaz_arp();
         void vypis(string text,int cislo);
         void vymaz_lb_smerovacia_tabulka();

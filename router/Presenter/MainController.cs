@@ -1,4 +1,5 @@
 ﻿using PacketDotNet;
+using PacketDotNet.Utils;
 using router.Model;
 using router.View;
 using SharpPcap;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace router.Presenter
@@ -35,6 +37,7 @@ namespace router.Presenter
         public int invalid_casovac { get; set; }
         public bool povolene_rip1 { get; set; }
         public bool povolene_rip2 { get; set; }
+        private bool zapis_ping = false;
 
         public MainController(IView view)
         {
@@ -176,10 +179,67 @@ namespace router.Presenter
                     Smerovaci_zaznam smerovaci_zaznam = null;
                     string via = null;
 
-                   IPv4Packet ip_pak = (IPv4Packet)eth.PayloadPacket;
+                   IPv4Packet ip_pak = (IPv4Packet)eth.PayloadPacket;              
+                    
                     ip_pak.UpdateIPChecksum();
+                  
+                if((ciel_adres.ToString()==rozhranie1.ip_adresa || ciel_adres.ToString() == rozhranie2.ip_adresa) && (int)eth.Bytes[23] == 1)
+                    {
+                        
+                            ICMPv4Packet ping = (ICMPv4Packet)ip_pak.PayloadPacket;
+                        if ((int)eth.Bytes[34] == 8)
+                        {   ping.Checksum = 0;
+                            ping.TypeCode = ICMPv4TypeCodes.EchoReply;
+
+                            byte[] bytes = BitConverter.GetBytes(GetCrc(ping.Bytes));
+                            Array.Reverse(bytes);
+                            ushort result = BitConverter.ToUInt16(bytes, 0);
+
+                            ping.Checksum = result;
+
+                            ip_pak.SourceAddress = ciel_adres;
+                            ip_pak.DestinationAddress = odosielatel_address;
+                            ip_pak.PayloadPacket = ping;
+                            ip_pak.UpdateIPChecksum();
+
+                            eth.PayloadPacket = ip_pak;
+
+                            smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(odosielatel_address);
+
+                            if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface == -1)
+                            {
+                                smerovaci_zaznam = rekurzivne_prehladanie(smerovaci_zaznam, ref via);
+                            }
+
+                            if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface != -1 && smerovaci_zaznam.next_hop != "X")
+                            {
+                                via = smerovaci_zaznam.next_hop;
+                            }
+
+                            if (smerovaci_zaznam != null)
+                            {
+                                if (smerovaci_zaznam.exit_interface == 2) rozhranie = rozhranie2;
+                                if (smerovaci_zaznam.exit_interface == 1) rozhranie = rozhranie1;
+
+
+                                Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, odosielatel_address));
+                                posielanie.Start();
+                            }
+                        }else if((int)eth.Bytes[34] == 0)
+                        {
+                            if (zapis_ping)
+                            {
+                                // main_view.vypis("!", 99);
+                                main_view.lbl_ping += "!";
+                                 zapis_ping = false;
+                            }
+                            
+                        }
+
+
+                    }
                
-                if ((ciel_adres.ToString()==rozhranie.ip_adresa || ciel_adres.ToString() =="224.0.0.9") && ((int)eth.Bytes[43] == 2)) spracuj_rip(eth, paket,rozhranie,odosielatel_address);
+                else if ((ciel_adres.ToString()==rozhranie.ip_adresa || ciel_adres.ToString() =="224.0.0.9") && ((int)eth.Bytes[43] == 2)) spracuj_rip(eth, paket,rozhranie,odosielatel_address);
                 else
                 {
 
@@ -330,7 +390,7 @@ namespace router.Presenter
 
         public Smerovaci_zaznam najdi_najlepsiu_v_databaze(IPAddress adresa_siete,IPAddress maska)
         {
-            Smerovaci_zaznam smerovaci_zaznam=null;
+            Smerovaci_zaznam smerovaci_zaznam = null;
             int najlepsia = 99;
 
             foreach (var zaznam in rip_databaza.ToList())
@@ -414,7 +474,7 @@ namespace router.Presenter
 
             udp_paket.PayloadData = rip_hlava;
             // udp_paket.UpdateUDPChecksum();
-
+            
             ip_paket.PayloadPacket = udp_paket;
             ip_paket.UpdateIPChecksum();
 
@@ -549,6 +609,7 @@ namespace router.Presenter
                     System.Threading.Thread.Sleep(500);
                 }
             }
+            Thread.CurrentThread.Abort();
         }
 
         public void zmaz_smerovaci_zaznam()
@@ -711,5 +772,108 @@ namespace router.Presenter
             }
         }
 
+        public void posli_ping(string ip)
+        {
+            if (ip.Equals(rozhranie1.ip_adresa) || ip.Equals(rozhranie2.ip_adresa))
+            {
+                main_view.lbl_ping = "!!!!!";
+            }
+            else
+            {                               
+                string cmdString = "abcdefghijklmnoprstu";
+                byte[] sendBuffer = Encoding.ASCII.GetBytes(cmdString);
+                ICMPv4Packet ping = new ICMPv4Packet(new ByteArraySegment(sendBuffer));
+                string via = null;
+                Rozhranie rozhranie = null;
+                ping.Checksum = 0;
+                ping.TypeCode = ICMPv4TypeCodes.EchoRequest;
+                ping.Sequence = 1;
+                ping.UpdateCalculatedValues();
+                byte[] bytes = BitConverter.GetBytes(GetCrc(ping.Bytes));
+                Array.Reverse(bytes);
+                ushort result = BitConverter.ToUInt16(bytes, 0);
+
+
+                ping.Checksum = result;
+
+                Smerovaci_zaznam smerovaci_zaznam = najdi_zaznam_v_smerovacej_tabulke(IPAddress.Parse(ip));
+
+                if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface == -1)
+                {
+                    smerovaci_zaznam = rekurzivne_prehladanie(smerovaci_zaznam, ref via);
+                }
+
+                if (smerovaci_zaznam != null && smerovaci_zaznam.exit_interface != -1 && smerovaci_zaznam.next_hop != "X")
+                {
+                    via = smerovaci_zaznam.next_hop;
+                }
+
+                if (smerovaci_zaznam != null)
+                {
+
+                    if (smerovaci_zaznam.exit_interface == 2)
+                    {
+                        rozhranie = rozhranie2;
+                    }
+                    if (smerovaci_zaznam.exit_interface == 1)
+                    {
+                        rozhranie = rozhranie1;
+                    }
+
+                    IPv4Packet ip_pak = new IPv4Packet(IPAddress.Parse(rozhranie1.ip_adresa), IPAddress.Parse(ip));
+                    ip_pak.SourceAddress = IPAddress.Parse(rozhranie.ip_adresa);
+                    ip_pak.DestinationAddress = IPAddress.Parse(ip);
+                    ip_pak.PayloadPacket = ping;
+                    ip_pak.UpdateIPChecksum();
+                    string label = "";
+
+                    EthernetPacket eth = new EthernetPacket(rozhranie.adapter.MacAddress, rozhranie.adapter.MacAddress, EthernetPacketType.IpV4);
+                    eth.PayloadPacket = ip_pak;
+                    int pokus = 5;
+
+                    while (pokus-- > 0)
+                    {
+                        Thread posielanie = new Thread(() => preposli(rozhranie, eth, smerovaci_zaznam, via, IPAddress.Parse(ip)));
+                        posielanie.Start();
+                        zapis_ping = true;
+                        Thread.Sleep(1000);
+                        if (zapis_ping.Equals(true)) main_view.lbl_ping += ".";// main_view.lbl_ping = label;//main_view.vypis(".", 85);
+
+                    }
+                }
+                else
+                {
+                    main_view.lbl_ping = "neviem smerovat";
+                }
+            }
+
+            Thread.CurrentThread.Abort();
+        }
+
+        private ushort GetCrc(byte[] buffer)            // kod na vypocet crc prebraty z http://blog.vyvojar.cz/lazo/archive/2004/10/01/1941.aspx
+        {
+            int crc = 0;
+            int index = 0;
+
+            ushort[] checksumBuffer = new ushort[Convert.ToInt32(Math.Ceiling(
+                                      Convert.ToDouble(buffer.Length) / 2))];
+
+            for (int counter = 0; counter < checksumBuffer.Length; counter++)
+            {
+                checksumBuffer[counter] = BitConverter.ToUInt16(buffer, index);
+                index += 2;
+            }
+            for (uint counter = 0; counter < checksumBuffer.Length; counter++)
+            {
+                crc += Convert.ToInt32(checksumBuffer[counter]);
+            }
+            crc = (crc >> 16) + (crc & 0xffff);
+            crc += (crc >> 16);
+
+            return (ushort)(~crc);
+        }
+
     }
+
+
 }

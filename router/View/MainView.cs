@@ -31,6 +31,7 @@ namespace router
         public string staticke_maska { get => txt_maska_staticke.Text; set => txt_maska_staticke.Text = value; }
         public string staticke_next_hop { get => txt_next_hop.Text; set => txt_next_hop.Text = value; }
         public string staticke_rozhranie { get => txt_rozhranie_staticke.Text; set => txt_rozhranie_staticke.Text = value; }
+        string IView.lbl_ping { get => lbl_ping.Text; set => lbl_ping.Text = value; }
 
         private Thread vlakno_rozhranie1 = null, vlakno_rozhranie2 = null;
 
@@ -254,6 +255,15 @@ namespace router
             if (txt_holddown.Text != "") presenter.holddown_casovac = Int32.Parse(txt_holddown.Text);
             if (txt_flush.Text != "") presenter.flush_casovac = Int32.Parse(txt_flush.Text);
         }
+
+        private void btn_ping_Click(object sender, EventArgs e)
+        {
+            lbl_ping.Text = "";
+            Thread posli_ping= new Thread(() => presenter.posli_ping(txt_ping.Text.ToString()));
+            posli_ping.Start();
+        }
+
+
 
         public void vymaz_lb_smerovacia_tabulka()
         {
