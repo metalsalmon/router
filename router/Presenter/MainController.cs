@@ -320,7 +320,8 @@ namespace router.Presenter
                                             if (zaznam.typ == "R")
                                             {
                                                 zaznam.metrika = 16;
-                                                if (najdi_najlepsiu_v_databaze(zaznam.cielova_siet, zaznam.maska) != null) smerovacia_tabulka.Add(najdi_najlepsiu_v_databaze(zaznam.cielova_siet, zaznam.maska));
+                                                Smerovaci_zaznam najlepsia = najdi_najlepsiu_v_databaze(zaznam.cielova_siet, zaznam.maska);
+                                                if (najlepsia != null) smerovacia_tabulka.Add(najlepsia);
                                                 //trigger_update(cislo_rozhrania,zaznam);
                                                 smerovacia_tabulka.Remove(zaznam);
                                                 pridaj_zaznam = false;
@@ -346,7 +347,17 @@ namespace router.Presenter
                                     }
                                 }
                             }
-                            //   bool pridavaj = true;
+
+                            if (pridaj_zaznam && rip_zaznam.metrika != 16)
+                            {
+                                smerovacia_tabulka.Add(rip_zaznam);
+                                rip_databaza.Add(rip_zaznam);
+                                posunutie_ip = posunutie_maska = posunutie_metrika = posunutie_ip + 20;
+                                continue;
+                            }
+                            pridaj_zaznam = true;
+
+                            
 
                             foreach (var zaznam in rip_databaza.ToList())
                             {
@@ -376,12 +387,7 @@ namespace router.Presenter
 
                                 }
                             }
-
-                            if (pridaj_zaznam && rip_zaznam.metrika != 16)
-                            {
-                                smerovacia_tabulka.Add(rip_zaznam);
-                            }
-                            pridaj_zaznam = true;
+                            if (rip_zaznam.metrika == 16) pridaj_do_databazy = false;
 
                             if (pridaj_do_databazy)
                             {
@@ -409,7 +415,7 @@ namespace router.Presenter
             {
                 if (zaznam.cielova_siet.Equals(adresa_siete) && zaznam.maska.Equals(maska))
                 {
-                    if (zaznam.metrika < najlepsia)
+                    if ((zaznam.metrika < najlepsia) && zaznam.metrika!=16)
                     {
                         najlepsia = zaznam.metrika;
                         smerovaci_zaznam = zaznam;
@@ -517,7 +523,7 @@ namespace router.Presenter
 
             foreach (var zaznam in smerovacia_tabulka.ToList())
             {
-                if ((zaznam.typ == "D" || zaznam.typ == "R") && zaznam.exit_interface!= cislo_rozhrania)
+                if ((zaznam.typ == "D" || zaznam.typ == "R") && zaznam.exit_interface!= cislo_rozhrania && zaznam.metrika!=16)
                 {
                     if(!prvy) rip_hlava = rip_hlava.Concat(hlava).ToArray();
                     prvy = false;
