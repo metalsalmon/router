@@ -275,122 +275,127 @@ namespace router.Presenter
 
         public void spracuj_rip(EthernetPacket eth,Packet packet,Rozhranie rozhranie, IPAddress oznamovatel)
         {
-            Smerovaci_zaznam rip_zaznam;
-            int dlzka= eth.Bytes.Length - 46;
-            int pocet = dlzka / 20;
-            int cislo_rozhrania;
-            bool pridaj_do_databazy = true;
-            IPAddress adresa_siete_rip;
-            IPAddress maska_rip;
-            bool pridaj_zaznam = true;
-            int slash_maska;
-            int posunutie_ip = 0,posunutie_maska=0,posunutie_metrika=0;
+            lock (this)
+            {
+                Smerovaci_zaznam rip_zaznam;
+                int dlzka = eth.Bytes.Length - 46;
+                int pocet = dlzka / 20;
+                int cislo_rozhrania;
+                bool pridaj_do_databazy = true;
+                IPAddress adresa_siete_rip;
+                IPAddress maska_rip;
+                bool pridaj_zaznam = true;
+                int slash_maska;
+                int posunutie_ip = 0, posunutie_maska = 0, posunutie_metrika = 0;
 
-            if (rozhranie == rozhranie1) cislo_rozhrania = 1;
-            else cislo_rozhrania = 2;
-            if((cislo_rozhrania==1 && povolene_rip1) ||(cislo_rozhrania == 2 && povolene_rip2))
-            if ((int)eth.Bytes[42]==2) {
-                while ((pocet--) > 0)
-                {
-                    
-                    adresa_siete_rip = Praca_s_ip.adresa_siete(new IPAddress(eth.Bytes.Skip(50 + posunutie_ip).Take(4).ToArray()), new IPAddress(eth.Bytes.Skip(54 + posunutie_maska).Take(4).ToArray()));
-                    maska_rip = new IPAddress(eth.Bytes.Skip(54 + posunutie_maska).Take(4).ToArray());
-                    pridaj_zaznam = true;
-                    slash_maska = Praca_s_ip.sprav_masku(maska_rip);
-
-                    rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip, maska_rip, 120, (int)eth.Bytes[65 + posunutie_metrika], oznamovatel.ToString(),
-                                                         cislo_rozhrania, 0, 0, 0);
-                    
-                    foreach (var zaznam in smerovacia_tabulka.ToList())
+                if (rozhranie == rozhranie1) cislo_rozhrania = 1;
+                else cislo_rozhrania = 2;
+                if ((cislo_rozhrania == 1 && povolene_rip1) || (cislo_rozhrania == 2 && povolene_rip2))
+                    if ((int)eth.Bytes[42] == 2)
                     {
-                        if (adresa_siete_rip.Equals(Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska)))
+                        while ((pocet--) > 0)
                         {
-                            if ((slash_maska == Praca_s_ip.sprav_masku(zaznam.maska))) 
+
+                            adresa_siete_rip = Praca_s_ip.adresa_siete(new IPAddress(eth.Bytes.Skip(50 + posunutie_ip).Take(4).ToArray()), new IPAddress(eth.Bytes.Skip(54 + posunutie_maska).Take(4).ToArray()));
+                            maska_rip = new IPAddress(eth.Bytes.Skip(54 + posunutie_maska).Take(4).ToArray());
+                            pridaj_zaznam = true;
+                            slash_maska = Praca_s_ip.sprav_masku(maska_rip);
+
+                            rip_zaznam = new Smerovaci_zaznam("R", adresa_siete_rip, maska_rip, 120, (int)eth.Bytes[65 + posunutie_metrika], oznamovatel.ToString(),
+                                                                 cislo_rozhrania, 0, 0, 0);
+
+                            foreach (var zaznam in smerovacia_tabulka.ToList())
                             {
+                                if (adresa_siete_rip.Equals(Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska)))
+                                {
+                                    if ((slash_maska == Praca_s_ip.sprav_masku(zaznam.maska)))
+                                    {
+                                        if (zaznam.metrika == 16)
+                                        {
+                                            pridaj_zaznam = false;
+                                            break;
+                                        }
+                                        if (rip_zaznam.metrika == 16)
+                                        {
+                                            if (zaznam.typ == "R")
+                                            {
+                                                zaznam.metrika = 16;
+                                                if (najdi_najlepsiu_v_databaze(zaznam.cielova_siet, zaznam.maska) != null) smerovacia_tabulka.Add(najdi_najlepsiu_v_databaze(zaznam.cielova_siet, zaznam.maska));
+                                                //trigger_update(cislo_rozhrania,zaznam);
+                                                smerovacia_tabulka.Remove(zaznam);
+                                                pridaj_zaznam = false;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                pridaj_zaznam = false;
+                                                break;
+                                            }
+                                        }
+                                        if (rip_zaznam.metrika >= zaznam.metrika)
+                                        {
+                                            pridaj_zaznam = false;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            smerovacia_tabulka.Remove(zaznam);
+                                            break;
+                                        }
+
+                                    }
+                                }
+                            }
+                            //   bool pridavaj = true;
+
+                            foreach (var zaznam in rip_databaza.ToList())
+                            {
+                                if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && (zaznam.next_hop == rip_zaznam.next_hop))
+                                {
+                                    pridaj_do_databazy = false;
                                     if (zaznam.metrika == 16)
                                     {
-                                        pridaj_zaznam = false;
-                                        break;
+                                        continue;
                                     }
-                                if (rip_zaznam.metrika == 16)
-                                {
-                                    if (zaznam.typ == "R")
+
+                                    if (rip_zaznam.metrika == 16)
                                     {
                                         zaznam.metrika = 16;
-                                        if (najdi_najlepsiu_v_databaze(zaznam.cielova_siet,zaznam.maska) != null) smerovacia_tabulka.Add(najdi_najlepsiu_v_databaze(zaznam.cielova_siet,zaznam.maska));
-                                            //trigger_update(cislo_rozhrania,zaznam);
-                                        smerovacia_tabulka.Remove(zaznam);
-                                        pridaj_zaznam = false;
-                                        break;
+                                        continue;
                                     }
-                                    else
+                                    else if (rip_zaznam.metrika != zaznam.metrika)
                                     {
-                                        pridaj_zaznam = false;
+                                        zaznam.metrika = rip_zaznam.metrika;
+                                        zaznam.nastav_casovace(0, 0, 0);
+                                    }
+                                    else if (rip_zaznam.metrika == zaznam.metrika)
+                                    {
+                                        zaznam.nastav_casovace(0, 0, 0);
                                         break;
                                     }
-                                }
-                                if (rip_zaznam.metrika >= zaznam.metrika)
-                                {
-                                    pridaj_zaznam = false;
-                                    break;
-                                }
-                                else
-                                {
-                                    smerovacia_tabulka.Remove(zaznam);
-                                        break;
-                                }
 
+                                }
                             }
+
+                            if (pridaj_zaznam && rip_zaznam.metrika != 16)
+                            {
+                                smerovacia_tabulka.Add(rip_zaznam);
+                            }
+                            pridaj_zaznam = true;
+
+                            if (pridaj_do_databazy)
+                            {
+                                rip_databaza.Add(rip_zaznam);
+                            }
+                            pridaj_do_databazy = true;
+
+                            posunutie_ip = posunutie_maska = posunutie_metrika = posunutie_ip + 20;
                         }
                     }
-                     //   bool pridavaj = true;
-
-                    foreach (var zaznam in rip_databaza.ToList())
+                    else if ((int)eth.Bytes[42] == 1)
                     {
-                        if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && (zaznam.next_hop==rip_zaznam.next_hop)) // && zaznam.metrika == rip_zaznam.metrika)
-                        {
-                           pridaj_do_databazy = false;
-                           if (zaznam.metrika == 16)
-                           {
-                                continue;
-                           }
-                            
-                            if (rip_zaznam.metrika == 16)
-                            {
-                                zaznam.metrika = 16;
-                                continue;
-                            }
-                            else if (rip_zaznam.metrika != zaznam.metrika)
-                            {
-                                    zaznam.metrika = rip_zaznam.metrika;
-                                    zaznam.nastav_casovace(0, 0, 0);
-                            }
-                            else if (rip_zaznam.metrika == zaznam.metrika)
-                                {
-                                    zaznam.nastav_casovace(0, 0, 0);
-                                    break;
-                                }
-                          
-                        }
+                        posli_update(rozhranie, cislo_rozhrania, oznamovatel, eth.SourceHwAddress);
                     }
-
-                    if (pridaj_zaznam && rip_zaznam.metrika!=16)
-                    {
-                        smerovacia_tabulka.Add(rip_zaznam);
-                    }
-                    pridaj_zaznam = true;
-
-                    if (pridaj_do_databazy)
-                    {
-                        rip_databaza.Add(rip_zaznam);
-                    }
-                    pridaj_do_databazy = true;
-
-                    posunutie_ip = posunutie_maska = posunutie_metrika = posunutie_ip + 20;
-                }
-            }else if ((int)eth.Bytes[42] == 1)
-            {
-                posli_update(rozhranie,cislo_rozhrania,oznamovatel,eth.SourceHwAddress);
             }
                    
         }
@@ -519,9 +524,8 @@ namespace router.Presenter
                     rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
                     rip_hlava = rip_hlava.Concat(next_hop).ToArray();
-                    if(zaznam.metrika!=16)metrika[3] = (byte)(zaznam.metrika+1);
+                    if(zaznam.metrika!=16) metrika[3] = (byte)(zaznam.metrika + 1);
                     else metrika[3] = (byte)(zaznam.metrika);
-                    metrika[3] = (byte)(zaznam.metrika + 1);
                     rip_hlava = rip_hlava.Concat(metrika).ToArray();
                 }
             }
@@ -737,7 +741,9 @@ namespace router.Presenter
             foreach (var zaznam in rip_databaza.ToList())
             {
                 main_view.vypis(zaznam.cielova_siet.ToString()+"  ,  "+zaznam.next_hop.ToString()+"   ",zaznam.metrika);
+                
             }
+            main_view.vypis("-----------------------------------------------------", 0);
         }
 
         public void vymaz_rip_zaznamy(int cislo_rozhrania)
