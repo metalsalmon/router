@@ -146,6 +146,10 @@ namespace router.Presenter
                                 zaznam.casovac = arp_casovac;
                                 pridaj_arp_zaznam = false;
                             }
+                            if (zaznam.ip.Equals(arp.ip))
+                            {
+                                pridaj_arp_zaznam = false;
+                            }
                         }
 
                         if (pridaj_arp_zaznam)
@@ -301,8 +305,13 @@ namespace router.Presenter
                     {
                         if (adresa_siete_rip.Equals(Praca_s_ip.adresa_siete(zaznam.cielova_siet, zaznam.maska)))
                         {
-                            if ((slash_maska == Praca_s_ip.sprav_masku(zaznam.maska))) //prejdem tabulkou a hladam ci je lepsia ako vsetky co tam su doteraz
+                            if ((slash_maska == Praca_s_ip.sprav_masku(zaznam.maska))) 
                             {
+                                    if (zaznam.metrika == 16)
+                                    {
+                                        pridaj_zaznam = false;
+                                        break;
+                                    }
                                 if (rip_zaznam.metrika == 16)
                                 {
                                     if (zaznam.typ == "R")
@@ -340,31 +349,29 @@ namespace router.Presenter
                     {
                         if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && (zaznam.next_hop==rip_zaznam.next_hop)) // && zaznam.metrika == rip_zaznam.metrika)
                         {
-                            pridaj_do_databazy = false;
+                           pridaj_do_databazy = false;
+                           if (zaznam.metrika == 16)
+                           {
+                                continue;
+                           }
+                            
                             if (rip_zaznam.metrika == 16)
                             {
                                 zaznam.metrika = 16;
-                                pridaj_zaznam = false;
                                 continue;
                             }
                             else if (rip_zaznam.metrika != zaznam.metrika)
                             {
                                     zaznam.metrika = rip_zaznam.metrika;
                                     zaznam.nastav_casovace(0, 0, 0);
-                                    //pridaj_do_databazy = true;
                             }
                             else if (rip_zaznam.metrika == zaznam.metrika)
                                 {
                                     zaznam.nastav_casovace(0, 0, 0);
-                                    pridaj_do_databazy = false;
                                     break;
                                 }
                           
                         }
-
-                         /*   if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && rip_zaznam.exit_interface != zaznam.exit_interface)
-                                pridaj_do_databazy = false; */
-
                     }
 
                     if (pridaj_zaznam && rip_zaznam.metrika!=16)
@@ -629,13 +636,13 @@ namespace router.Presenter
                 foreach (var zaznam in rip_databaza.ToList())
                 {
                     zaznam.flush++;
-                    if (zaznam.flush == flush_casovac)
+                    if (zaznam.flush.Equals(flush_casovac))
                     {
                         rip_databaza.Remove(zaznam);
                         smerovacia_tabulka.Remove(zaznam);
                         break;
                     }
-                    if (zaznam.invalid == invalid_casovac)
+                    if (zaznam.invalid.Equals(invalid_casovac))
                     {
                         zaznam.metrika = 16;
                         zaznam.holddown++;
@@ -765,7 +772,7 @@ namespace router.Presenter
             if (rozhranie.adapter.MacAddress != null)
             {
                 EthernetPacket ethernet_packet = new EthernetPacket(rozhranie.adapter.MacAddress, eth.SourceHwAddress, EthernetPacketType.Arp);
-               arp_packet = new ARPPacket(ARPOperation.Response, eth.SourceHwAddress, odosielatel_address, rozhranie.adapter.MacAddress, ciel_adres);
+                arp_packet = new ARPPacket(ARPOperation.Response, eth.SourceHwAddress, odosielatel_address, rozhranie.adapter.MacAddress, ciel_adres);
             
                 ethernet_packet.PayloadPacket = arp_packet;
                 rozhranie.adapter.SendPacket(ethernet_packet);

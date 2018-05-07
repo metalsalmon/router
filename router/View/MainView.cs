@@ -43,6 +43,7 @@ namespace router
             presenter = new MainController(this);
         }
 
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
@@ -186,7 +187,7 @@ namespace router
                 presenter.zmaz_smerovaci_zaznam();
                 lb_smerovacia_tabulka.Items.RemoveAt(lb_smerovaci_zaznam_index);
             }
-            }
+        }
 
         private void btnpridaj_Click(object sender, EventArgs e)
         {
