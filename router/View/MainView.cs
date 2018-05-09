@@ -59,11 +59,26 @@ namespace router
                 {
                     presenter.rozhranie1 = presenter.nastav_ip(presenter.rozhranie1,1);
                     presenter.priamo_pripojena_siet(1);
+                    try
+                    {
+                        presenter.vymaz_rip_zaznamy(1);
+                    }
+                    catch (Exception ee)
+                    {
+
+                    }
                 }
                 else
                 {
                     presenter.rozhranie2 = presenter.nastav_ip(presenter.rozhranie2,2);
                     presenter.priamo_pripojena_siet(2);
+                    try
+                    {
+                        presenter.vymaz_rip_zaznamy(2);
+                    }catch(Exception ee)
+                    {
+
+                    }
                 }
 
                 try

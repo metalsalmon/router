@@ -316,7 +316,7 @@ namespace router.Presenter
                                         }
                                         if (rip_zaznam.metrika == 16)
                                         {
-                                            if (zaznam.typ.Equals("R"))
+                                            if (zaznam.typ.Equals("R") && zaznam.next_hop.Equals(rip_zaznam.next_hop))
                                             {
                                                 smerovacia_tabulka.Remove(zaznam);
                                                 zaznam.metrika = 16;
@@ -330,8 +330,12 @@ namespace router.Presenter
                                                     smerovacia_tabulka.Remove(zaznam);
                                                     rip_databaza.Remove(zaznam);
                                                 }
-                                                //trigger_update(cislo_rozhrania,zaznam);
+                                                else
+                                                {
+                                                    trigger_update(zaznam.exit_interface, zaznam);
+                                                }
 
+                                                
                                                 pridaj_zaznam = false;
                                                 break;
                                             }
@@ -394,11 +398,6 @@ namespace router.Presenter
                                     }
 
                                 }
-                            /*   else if (adresa_siete_rip.Equals(zaznam.cielova_siet) && zaznam.maska.Equals(rip_zaznam.maska) && zaznam.metrika == 16 && rip_zaznam.metrika!=16)
-                                {
-                                    rip_databaza.Remove(zaznam);
-                                    rip_databaza.Add(rip_zaznam);
-                                }*/
 
                             }
                             if (rip_zaznam.metrika == 16) pridaj_do_databazy = false;
@@ -501,7 +500,7 @@ namespace router.Presenter
             rip_hlava = rip_hlava.Concat(zaznam.cielova_siet.GetAddressBytes()).ToArray();
             rip_hlava = rip_hlava.Concat(zaznam.maska.GetAddressBytes()).ToArray();
             rip_hlava = rip_hlava.Concat(next_hop).ToArray();
-           // metrika[3] = (byte)(zaznam.metrika + 1);
+
             rip_hlava = rip_hlava.Concat(metrika).ToArray();
 
             udp_paket.PayloadData = rip_hlava;
